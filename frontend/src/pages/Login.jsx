@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { Eye, EyeOff, LogIn, LayoutDashboard } from "lucide-react";
 
 export default function Login() {
-  const { login }    = useAuth();
+  const { login, demoLogin } = useAuth();
   const navigate     = useNavigate();
   const [form, setForm]   = useState({ userName: "", password: "", companyCode: "" });
   const [showPwd, setShow] = useState(false);
@@ -99,12 +99,9 @@ export default function Login() {
             }}
             onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--primary)"; e.currentTarget.style.color = "var(--text)"; }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.color = "var(--text2)"; }}
-            onClick={async () => {
-              setLoading(true);
-              try {
-                await login("demo", "demo", "DEMO");
-                navigate("/attendance", { replace: true });
-              } finally { setLoading(false); }
+            onClick={() => {
+              demoLogin();
+              navigate("/attendance", { replace: true });
             }}
             disabled={loading}>
             <LayoutDashboard size={15} /> Preview Dashboard (Demo)
