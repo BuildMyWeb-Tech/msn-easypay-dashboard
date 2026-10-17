@@ -17,19 +17,34 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = useCallback(async (userName, password, companyCode) => {
-    const res = await api.post("/auth/login", { userName, password, companyCode });
-    const data = res.data.data;
-    const session = {
-      userId:      data.UserId      ?? data.userid      ?? data.UserID,
-      userName:    data.UserName    ?? data.username,
-      companyId:   data.CompanyId   ?? data.companyid,
-      companyCode: data.CompanyCode ?? data.companycode ?? companyCode,
-      companyName: data.CompanyName ?? data.companyname ?? "",
-      roleId:      data.RoleId      ?? data.roleid      ?? 0,
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
-    setUser(session);
-    return session;
+    try {
+      const res = await api.post("/auth/login", { userName, password, companyCode });
+      const data = res.data.data;
+      const session = {
+        userId:      data.UserId      ?? data.userid      ?? data.UserID,
+        userName:    data.UserName    ?? data.username,
+        companyId:   data.CompanyId   ?? data.companyid,
+        companyCode: data.CompanyCode ?? data.companycode ?? companyCode,
+        companyName: data.CompanyName ?? data.companyname ?? "",
+        roleId:      data.RoleId      ?? data.roleid      ?? 0,
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
+      setUser(session);
+      return session;
+    } catch (err) {
+      // No backend yet — fall back to demo session so the UI is usable
+      const isNetworkError = !err.response;
+      if (isNetworkError) {
+        const session = {
+          userId: 0, userName, companyCode, companyName: "Demo Mode",
+          companyId: 0, roleId: 0, isDemo: true,
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
+        setUser(session);
+        return session;
+      }
+      throw err;
+    }
   }, []);
 
   const logout = useCallback(() => {

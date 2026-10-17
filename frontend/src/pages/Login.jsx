@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { Eye, EyeOff, LogIn } from "lucide-react";
+import { Eye, EyeOff, LogIn, LayoutDashboard } from "lucide-react";
 
 export default function Login() {
   const { login }    = useAuth();
@@ -82,6 +82,32 @@ export default function Login() {
             {loading
               ? <span className="spinner" style={{ width: 16, height: 16 }} />
               : <><LogIn size={15} /> Sign In</>}
+          </button>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "4px 0" }}>
+            <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
+            <span style={{ fontSize: 11, color: "var(--text3)" }}>or</span>
+            <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
+          </div>
+
+          <button type="button"
+            style={{
+              width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
+              padding: "9px", background: "var(--surface2)", border: "1px solid var(--border)",
+              borderRadius: "var(--radius-xs)", color: "var(--text2)", fontSize: 13, fontWeight: 600,
+              cursor: "pointer", transition: "all .15s",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--primary)"; e.currentTarget.style.color = "var(--text)"; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.color = "var(--text2)"; }}
+            onClick={async () => {
+              setLoading(true);
+              try {
+                await login("demo", "demo", "DEMO");
+                navigate("/attendance", { replace: true });
+              } finally { setLoading(false); }
+            }}
+            disabled={loading}>
+            <LayoutDashboard size={15} /> Preview Dashboard (Demo)
           </button>
         </form>
 
