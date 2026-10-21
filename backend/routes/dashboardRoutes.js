@@ -5,19 +5,22 @@ const { protect } = require("../middleware/authMiddleware");
 
 router.use(protect);
 
-router.get("/summary",        ctrl.getSummary);
-router.get("/dept-absent",    ctrl.getDeptAbsent);
-router.get("/dept-strength",  ctrl.getDeptStrength);
-router.get("/weekly-strength",ctrl.getWeeklyStrength);
-router.get("/weekly-absent",  ctrl.getWeeklyAbsent);
-router.get("/turnover",       ctrl.getTurnover);
-router.get("/absent-list",    ctrl.getAbsentList);
-router.get("/late-in",        ctrl.getLateIn);
-router.get("/punch-list",     ctrl.getPunchList);
-router.get("/ot-list",        ctrl.getOTList);
-router.get("/employee-list",  ctrl.getEmployeeList);
-router.get("/long-absent",    ctrl.getLongAbsent);
-router.get("/geo-punch",      ctrl.getGeoPunch);
-router.get("/assets",         ctrl.getAssets);
+// ── Main dashboard data (PR_GETDBOARD_DATA_01) ────────────────────────────────
+router.get("/main-data",    ctrl.getMainData);    // donut + pie + empData + attend + turnover
+
+// ── Weekly charts (PRW_GET_WEEKLYDEPTSTRENGTH) ────────────────────────────────
+router.get("/weekly-data",  ctrl.getWeeklyData);  // strength + absent arrays
+
+// ── Dept summary table (PRW_GetDeptSummary) ───────────────────────────────────
+router.get("/dept-summary", ctrl.getDeptSummary); // ON Roll/Dayshift/Nightshift/Present/Absent/Present%
+
+// ── Report accordions (SPs TBD) ───────────────────────────────────────────────
+router.get("/absent-list",  ctrl.getAbsentList);
+router.get("/late-in",      ctrl.getLateIn);
+router.get("/punch-list",   ctrl.getPunchList);
+router.get("/ot-list",      ctrl.getOTList);
+router.get("/employee-list",ctrl.getEmployeeList);
+router.get("/long-absent",  ctrl.getLongAbsent);
+router.get("/geo-punch",    ctrl.getGeoPunch);
 
 module.exports = router;
