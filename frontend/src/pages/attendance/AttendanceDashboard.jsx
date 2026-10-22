@@ -98,8 +98,8 @@ function KpiTile({ label, value, Icon, color }) {
 function AttendCard({ icon, iconBg, iconColor, label, value, sub }) {
   return (
     <div style={{
-      display: "flex", alignItems: "center", gap: 14, padding: "14px 18px",
-      borderRight: "1px solid var(--border)",
+      display: "flex", alignItems: "center", gap: 12, padding: "12px 14px",
+      borderBottom: "1px solid var(--border)",
     }}>
       <div style={{
         width: 44, height: 44, borderRadius: "var(--radius-sm)", flexShrink: 0,
@@ -203,23 +203,28 @@ export default function AttendanceDashboard() {
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
 
       {/* Date picker */}
-      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
         <input type="date" value={date} onChange={e => setDate(e.target.value)}
           style={{
-            background: "var(--surface2)", border: "1px solid var(--border)",
-            borderRadius: "var(--radius-xs)", padding: "7px 12px",
-            color: "var(--text)", fontSize: 13,
+            background: "var(--surface)", border: "1px solid var(--border)",
+            borderRadius: "var(--radius-xs)", padding: "8px 12px",
+            color: "var(--text)", fontSize: 13, minHeight: 40,
+            touchAction: "manipulation",
           }} />
         <button className="btn btn-primary btn-sm"
           onClick={() => { loadMain(date); loadSecondary(date); }}
-          style={{ display: "flex", alignItems: "center", gap: 5 }}>
+          style={{ display: "flex", alignItems: "center", gap: 5, minHeight: 40 }}>
           <RefreshCw size={13} /> Submit
         </button>
         {loading && <span className="spinner" />}
         {error && <span style={{ fontSize: 12, color: "var(--red)" }}>{error}</span>}
         {user?.isDemo && (
-          <span style={{ fontSize: 11, color: "var(--yellow)", background: "var(--yellow-dim)", padding: "3px 8px", borderRadius: "var(--radius-xs)" }}>
-            Demo Mode — connect backend for live data
+          <span style={{
+            fontSize: 11, color: "var(--yellow)",
+            background: "var(--yellow-dim)", padding: "4px 10px",
+            borderRadius: "var(--radius-xs)", whiteSpace: "nowrap",
+          }}>
+            Demo Mode
           </span>
         )}
       </div>
@@ -229,9 +234,10 @@ export default function AttendanceDashboard() {
         <div className="card">
           <div className="card-header card-header-red">Present Vs Absent on : {sectionLabel}</div>
           <div className="card-body" style={{ display: "flex", justifyContent: "center" }}>
-            <ResponsiveContainer width="100%" height={220}>
+            <ResponsiveContainer width="100%" height={isMobile ? 180 : 220}>
               <PieChart>
-                <Pie data={donutData} cx="50%" cy="50%" innerRadius={60} outerRadius={90}
+                <Pie data={donutData} cx="50%" cy="50%"
+                  innerRadius={isMobile ? 48 : 60} outerRadius={isMobile ? 72 : 90}
                   dataKey="value" paddingAngle={3}>
                   <Cell fill="#22c55e" />
                   <Cell fill="#e53935" />
@@ -246,9 +252,10 @@ export default function AttendanceDashboard() {
         <div className="card">
           <div className="card-header card-header-red">Departmentwise on : {sectionLabel}</div>
           <div className="card-body" style={{ display: "flex", justifyContent: "center" }}>
-            <ResponsiveContainer width="100%" height={220}>
+            <ResponsiveContainer width="100%" height={isMobile ? 180 : 220}>
               <PieChart>
-                <Pie data={pieData} cx="50%" cy="50%" outerRadius={90}
+                <Pie data={pieData} cx="50%" cy="50%"
+                  outerRadius={isMobile ? 68 : 90}
                   dataKey="value" nameKey="name" paddingAngle={2}>
                   {pieData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
                 </Pie>
@@ -282,7 +289,7 @@ export default function AttendanceDashboard() {
         <div className="card-header card-header-red">Attendance Data</div>
         <div style={{
           display: "grid",
-          gridTemplateColumns: isMobile ? "repeat(2,1fr)" : "repeat(4,1fr)",
+          gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4,1fr)",
         }}>
           <AttendCard
             icon={<CalendarCheck size={20} />}
@@ -311,7 +318,7 @@ export default function AttendanceDashboard() {
         <div className="card">
           <div className="card-header card-header-red">Weekly Strength Analysis</div>
           <div className="card-body">
-            <ResponsiveContainer width="100%" height={200}>
+            <ResponsiveContainer width="100%" height={isMobile ? 170 : 200}>
               <BarChart data={weekly.strength} barCategoryGap="30%">
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                 <XAxis dataKey="DayName" tick={{ fill: "var(--text3)", fontSize: 11 }} axisLine={false} tickLine={false} />
@@ -328,7 +335,7 @@ export default function AttendanceDashboard() {
         <div className="card">
           <div className="card-header card-header-red">Weekly Absent Analysis</div>
           <div className="card-body">
-            <ResponsiveContainer width="100%" height={200}>
+            <ResponsiveContainer width="100%" height={isMobile ? 170 : 200}>
               <BarChart data={weekly.absent} barCategoryGap="30%">
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                 <XAxis dataKey="DayName" tick={{ fill: "var(--text3)", fontSize: 11 }} axisLine={false} tickLine={false} />

@@ -72,6 +72,10 @@ html, body {
   line-height: 1.6;
   -webkit-tap-highlight-color: transparent;
   -webkit-font-smoothing: antialiased;
+  /* Prevent overscroll bounce on iOS */
+  overscroll-behavior: none;
+  /* Smooth momentum scrolling on iOS */
+  -webkit-overflow-scrolling: touch;
 }
 #root { height: 100%; }
 a { color: inherit; text-decoration: none; }
@@ -374,8 +378,10 @@ input, select, textarea { font-family: inherit; }
     z-index: 300;
     transform: translateX(-100%);
     transition: transform var(--transition);
-    overflow: hidden;      /* prevent content bleed when translated off-screen */
+    overflow: hidden;
     box-shadow: none;
+    /* Safe area for notched phones */
+    padding-bottom: env(safe-area-inset-bottom, 0);
   }
   .sidebar.mobile-open {
     transform: translateX(0);
@@ -386,10 +392,47 @@ input, select, textarea { font-family: inherit; }
   /* Main takes full width */
   .main-wrap { width: 100%; }
 
-  .page-content { padding: 12px; }
-
-  /* Topbar tighter on mobile */
-  .topbar { padding: 0 12px; gap: 8px; }
+  /* Topbar — account for notch/status bar on iOS */
+  .topbar {
+    padding: 0 12px;
+    padding-left: max(12px, env(safe-area-inset-left, 12px));
+    padding-right: max(12px, env(safe-area-inset-right, 12px));
+    gap: 8px;
+  }
   .topbar-brand { font-size: 13px; }
   .topbar-page  { font-size: 12px; }
+
+  /* Page content — bottom safe area for home indicator */
+  .page-content {
+    padding: 12px;
+    padding-left:   max(12px, env(safe-area-inset-left,   12px));
+    padding-right:  max(12px, env(safe-area-inset-right,  12px));
+    padding-bottom: max(20px, env(safe-area-inset-bottom, 20px));
+  }
+
+  /* Enlarge touch targets */
+  .nav-item    { min-height: 44px; }
+  .btn         { min-height: 40px; }
+  .icon-btn    { min-height: 36px; }
+
+  /* Tables — allow horizontal scroll without breaking layout */
+  .data-table  { font-size: 12px; }
+  .data-table th, .data-table td { padding: 7px 10px; white-space: nowrap; }
+
+  /* Cards — reduce inner padding on mobile */
+  .card-body   { padding: 12px; }
+  .card-header { padding: 10px 12px; font-size: 12px; }
+
+  /* KPI number stays legible at small size */
+  .kpi-num     { font-size: 22px; }
+  .kpi-tile    { padding: 12px; }
+}
+
+/* ── Safe-area padding for standalone PWA on iOS ────────────── */
+@media (display-mode: standalone) {
+  .topbar {
+    padding-top: env(safe-area-inset-top, 0);
+    height: calc(var(--header-h) + env(safe-area-inset-top, 0));
+  }
+  .app-layout { height: 100dvh; }
 }

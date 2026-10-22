@@ -5,6 +5,7 @@ import AppLayout              from "./components/AppLayout";
 import Login                  from "./pages/Login";
 import AttendanceDashboard    from "./pages/attendance/AttendanceDashboard";
 import PayrollDashboard       from "./pages/payroll/PayrollDashboard";
+import InstallPrompt          from "./components/InstallPrompt";
 
 function ComingSoon({ title }) {
   return (
@@ -75,6 +76,7 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <AppRoutes />
+        <InstallPrompt />
       </AuthProvider>
     </BrowserRouter>
   );
