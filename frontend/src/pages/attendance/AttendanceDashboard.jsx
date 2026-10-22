@@ -155,21 +155,21 @@ export default function AttendanceDashboard() {
     }
   }, [user]);
 
-  // ── Sections 6-8 — Task 22: enable after tomorrow's push ────
-  // PRW_GET_WEEKLYDEPTSTRENGTH + PRW_GetDeptSummary ready in backend.
-  // Uncomment in Task 22 commit to go live.
-  const loadSecondary = useCallback(async (_d) => {
-    // Task 22 — uncomment block below:
-    // if (user?.isDemo) return;
-    // try {
-    //   const [wRes, dRes] = await Promise.all([
-    //     api.get("/dashboard/weekly-data"),
-    //     api.get(`/dashboard/dept-summary?date=${_d}`),
-    //   ]);
-    //   if (wRes.data?.data) setWeekly(wRes.data.data);
-    //   if (dRes.data?.data?.length) setDeptSum(dRes.data.data);
-    // } catch {}
-  }, []);
+  // ── Sections 6-8: weekly charts + dept summary ──────────────
+  // PRW_GET_WEEKLYDEPTSTRENGTH + PRW_GetDeptSummary
+  const loadSecondary = useCallback(async (d) => {
+    if (user?.isDemo) return;
+    try {
+      const [wRes, dRes] = await Promise.all([
+        api.get("/dashboard/weekly-data"),
+        api.get(`/dashboard/dept-summary?date=${d}`),
+      ]);
+      if (wRes.data?.data) setWeekly(wRes.data.data);
+      if (dRes.data?.data?.length) setDeptSum(dRes.data.data);
+    } catch {
+      // silently keep dummy on API failure
+    }
+  }, [user]);
 
   useEffect(() => {
     loadMain(date);
