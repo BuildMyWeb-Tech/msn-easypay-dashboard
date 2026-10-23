@@ -61,6 +61,15 @@ const server = app.listen(PORT, () => {
 
 process.on("SIGTERM", () => { server.close(() => process.exit(0)); setTimeout(() => process.exit(1), 10000); });
 process.on("SIGINT",  () => { server.close(() => process.exit(0)); setTimeout(() => process.exit(1), 10000); });
-process.on("unhandledRejection", (e) => { console.error("Unhandled rejection:", e); server.close(() => process.exit(1)); });
+process.on("unhandledRejection", (e) => {
+  // DB connection failures are handled per-request (poolPromise rejects → 503).
+  // Don't crash the server — it can still serve auth and health routes.
+  if (e && (e.code === "ESOCKET" || e.code === "ELOGIN" || e.status === 503)) {
+    console.error("Unhandled rejection (DB):", e.message);
+    return;
+  }
+  console.error("Unhandled rejection:", e);
+  server.close(() => process.exit(1));
+});
 
 module.exports = app;
