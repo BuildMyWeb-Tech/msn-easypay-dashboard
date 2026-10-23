@@ -50,6 +50,9 @@ app.get("/health", (_, res) =>
 
 app.use("/api/auth",      require("./routes/authRoutes"));
 app.use("/api/dashboard", require("./routes/dashboardRoutes"));
+// Also mount without /api prefix for Vercel deployments where VITE_API_URL omits /api
+app.use("/auth",      require("./routes/authRoutes"));
+app.use("/dashboard", require("./routes/dashboardRoutes"));
 
 const { notFound, errorHandler } = require("./middleware/authMiddleware");
 app.use(notFound);
