@@ -95,7 +95,7 @@ function KpiTile({ label, value, Icon, color }) {
 }
 
 // ── Attend Card ───────────────────────────────────────────────
-function AttendCard({ icon, iconBg, iconColor, label, value, sub }) {
+function AttendCard({ icon, iconBg, iconColor, label, value, sub, valueFontSize }) {
   return (
     <div style={{
       display: "flex", alignItems: "center", gap: 12, padding: "12px 14px",
@@ -109,7 +109,7 @@ function AttendCard({ icon, iconBg, iconColor, label, value, sub }) {
         {icon}
       </div>
       <div>
-        <div style={{ fontSize: 22, fontWeight: 700, color: "var(--text)" }}>{value ?? "—"}</div>
+        <div style={{ fontSize: valueFontSize ?? 22, fontWeight: 700, color: "var(--text)" }}>{value ?? "—"}</div>
         <div style={{ fontSize: 12, color: "var(--text2)" }}>{label}</div>
         {sub && <div style={{ fontSize: 11, color: "var(--text3)", marginTop: 2 }}>{sub}</div>}
       </div>
@@ -227,6 +227,14 @@ export default function AttendanceDashboard() {
             Demo Mode
           </span>
         )}
+        {att.Dt && !loading && (
+          <span style={{
+            fontSize: 12, color: "var(--text3)", display: "flex", alignItems: "center", gap: 4,
+          }}>
+            <CalendarCheck size={13} style={{ color: "var(--blue)", flexShrink: 0 }} />
+            Last processed: <strong style={{ color: "var(--text2)" }}>{att.Dt}</strong>
+          </span>
+        )}
       </div>
 
       {/* ─ 1 & 2: Donut + Dept Pie ───────────────────────────── */}
@@ -289,14 +297,8 @@ export default function AttendanceDashboard() {
         <div className="card-header card-header-red">Attendance Data</div>
         <div style={{
           display: "grid",
-          gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4,1fr)",
+          gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(3,1fr)",
         }}>
-          <AttendCard
-            icon={<CalendarCheck size={20} />}
-            iconBg="var(--blue-dim)" iconColor="var(--blue)"
-            label="Last Processing on"
-            value={att.Dt ? String(att.Dt).split(" ").slice(0,3).join(" ") : "—"}
-            sub={att.Dt ? String(att.Dt).split(" ").slice(3).join(" ") : ""} />
           <AttendCard
             icon={<CheckCircle2 size={20} />}
             iconBg="var(--green-dim)" iconColor="var(--green)"
@@ -375,9 +377,9 @@ export default function AttendanceDashboard() {
                     <td>{typeof r.PresentPct === "number" ? r.PresentPct.toFixed(2) + "%" : r.PresentPct}</td>
                     <td>
                       <button className="btn btn-ghost btn-sm"
-                        style={{ padding: "3px 8px", color: "var(--blue)" }}
+                        style={{ padding: "3px 10px", color: "var(--blue)", fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 4, border: "1px solid var(--blue)", borderRadius: "var(--radius-xs)" }}
                         title={`View ${r.Department} details`}>
-                        <Eye size={13} />
+                        <Eye size={12} /> View
                       </button>
                     </td>
                   </tr>
