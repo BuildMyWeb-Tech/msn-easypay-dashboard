@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Outlet, NavLink, useNavigate, useLocation } from "react-router-dom";
+import { Outlet, NavLink, useNavigate, useLocation, useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useResponsive } from "../hooks/useResponsive";
 import {
@@ -64,6 +64,8 @@ export default function AppLayout() {
   const { isMobile }         = useResponsive();
   const navigate             = useNavigate();
   const location             = useLocation();
+  const { tenant }           = useParams();
+  const base                 = `/${tenant || "omtex"}`;
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   // ── Theme toggle ────────────────────────────────────────────
@@ -76,10 +78,12 @@ export default function AppLayout() {
     try { localStorage.setItem("ep-theme", isDark ? "dark" : "light"); } catch {}
   }, [isDark]);
 
-  const handleLogout = () => { logout(); navigate("/login", { replace: true }); };
+  const handleLogout = () => { logout(); navigate(`${base}/login`, { replace: true }); };
   const closeDrawer  = () => setDrawerOpen(false);
 
-  const currentLabel = PAGE_LABELS[location.pathname] || "";
+  // Strip tenant prefix to get the page key for labels
+  const pagePath     = location.pathname.replace(base, "") || "/attendance";
+  const currentLabel = PAGE_LABELS[pagePath] || PAGE_LABELS[location.pathname] || "";
   const initials     = (user?.userName || "U").slice(0, 2).toUpperCase();
   const companyName  = user?.isDemo
     ? "Demo Mode"
@@ -120,7 +124,7 @@ export default function AppLayout() {
 
         {/* Nav */}
         <nav className="sidebar-nav">
-          <NavLink to="/attendance" end
+          <NavLink to={`${base}/attendance`} end
             className={({ isActive }) => `nav-item${isActive ? " active" : ""}`}
             onClick={closeDrawer}>
             <LayoutDashboard size={15} className="nav-icon" /> Dashboard
@@ -130,7 +134,7 @@ export default function AppLayout() {
             <React.Fragment key={group.section}>
               <div className="sidebar-section">{group.section}</div>
               {group.items.map(({ path, label, Icon }) => (
-                <NavLink key={path} to={path}
+                <NavLink key={path} to={`${base}${path}`}
                   className={({ isActive }) => `nav-item${isActive ? " active" : ""}`}
                   onClick={closeDrawer}>
                   <Icon size={15} className="nav-icon" /> {label}

@@ -1,12 +1,16 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useTenant } from "../hooks/useTenant";
 import { Eye, EyeOff, LogIn, LayoutDashboard } from "lucide-react";
 
 export default function Login() {
   const { login, demoLogin } = useAuth();
   const navigate     = useNavigate();
-  const [form, setForm]   = useState({ userName: "", password: "", companyCode: "" });
+  const { tenant }   = useParams();
+  const { config }   = useTenant();          // company config from URL slug
+
+  const [form, setForm]    = useState({ userName: "", password: "" });
   const [showPwd, setShow] = useState(false);
   const [error, setError]  = useState("");
   const [loading, setLoading] = useState(false);
@@ -15,15 +19,17 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.userName || !form.password || !form.companyCode) {
-      setError("All fields are required");
+    if (!form.userName || !form.password) {
+      setError("Username and password are required");
       return;
     }
     setError("");
     setLoading(true);
     try {
-      await login(form.userName, form.password, form.companyCode);
-      navigate("/attendance", { replace: true });
+      // companyCode is implicitly taken from tenant config — user never types it
+      const companyCode = config?.companyCode || "";
+      await login(form.userName, form.password, companyCode);
+      navigate(`/${tenant}/attendance`, { replace: true });
     } catch (err) {
       setError(err.response?.data?.message || "Login failed. Please check your credentials.");
     } finally {
@@ -43,6 +49,16 @@ export default function Login() {
             onError={e => e.target.style.display = "none"} />
           <div style={{ marginTop: 12, fontSize: 22, fontWeight: 800, letterSpacing: "-0.02em" }}>EasyPay</div>
           <div style={{ fontSize: 13, color: "var(--text3)", marginTop: 4 }}>HR &amp; Payroll Dashboard</div>
+          {config && (
+            <div style={{
+              marginTop: 8, display: "inline-block",
+              fontSize: 12, fontWeight: 700, color: "var(--primary)",
+              background: "var(--red-dim)", padding: "3px 12px",
+              borderRadius: "var(--radius-xs)", letterSpacing: "0.05em",
+            }}>
+              {config.name}
+            </div>
+          )}
         </div>
 
         <form onSubmit={handleSubmit}
@@ -60,8 +76,6 @@ export default function Login() {
             }}>{error}</div>
           )}
 
-          <Field label="Company Code" value={form.companyCode} onChange={set("companyCode")}
-            placeholder="e.g. 5146688" />
           <Field label="Username" value={form.userName} onChange={set("userName")}
             placeholder="Enter username" autoComplete="username" />
           <Field label="Password" type={showPwd ? "text" : "password"}
@@ -101,7 +115,7 @@ export default function Login() {
             onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.color = "var(--text2)"; }}
             onClick={() => {
               demoLogin();
-              navigate("/attendance", { replace: true });
+              navigate(`/${tenant}/attendance`, { replace: true });
             }}
             disabled={loading}>
             <LayoutDashboard size={15} /> Preview Dashboard (Demo)

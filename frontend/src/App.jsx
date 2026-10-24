@@ -1,11 +1,12 @@
 import React from "react";
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useParams } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import AppLayout              from "./components/AppLayout";
 import Login                  from "./pages/Login";
 import AttendanceDashboard    from "./pages/attendance/AttendanceDashboard";
 import PayrollDashboard       from "./pages/payroll/PayrollDashboard";
 import InstallPrompt          from "./components/InstallPrompt";
+import TENANTS                from "./config/tenants";
 
 function ComingSoon({ title }) {
   return (
@@ -17,9 +18,22 @@ function ComingSoon({ title }) {
   );
 }
 
+// Validates :tenant slug — unknown slugs redirect to /omtex
+function TenantGuard({ children }) {
+  const { tenant } = useParams();
+  const location   = useLocation();
+  const isValid    = tenant && TENANTS[tenant.toLowerCase()];
+  if (!isValid) {
+    const rest = location.pathname.replace(`/${tenant}`, "") || "/login";
+    return <Navigate to={`/omtex${rest}`} replace />;
+  }
+  return children;
+}
+
 function ProtectedRoute({ children }) {
   const { isAuthenticated, isLoading } = useAuth();
-  const location = useLocation();
+  const { tenant } = useParams();
+  const location   = useLocation();
   if (isLoading) {
     return (
       <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg)" }}>
@@ -30,27 +44,43 @@ function ProtectedRoute({ children }) {
       </div>
     );
   }
-  if (!isAuthenticated) return <Navigate to="/login" state={{ from: location }} replace />;
+  if (!isAuthenticated) return <Navigate to={`/${tenant}/login`} state={{ from: location }} replace />;
   return children;
 }
 
 function PublicRoute({ children }) {
   const { isAuthenticated, isLoading } = useAuth();
+  const { tenant } = useParams();
   if (isLoading) return null;
-  if (isAuthenticated) return <Navigate to="/attendance" replace />;
+  if (isAuthenticated) return <Navigate to={`/${tenant}/attendance`} replace />;
   return children;
 }
 
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
-      <Route path="/" element={
-        <ProtectedRoute>
-          <AppLayout />
-        </ProtectedRoute>
-      }>
-        <Route index element={<Navigate to="/attendance" replace />} />
+      {/* Root → default tenant login */}
+      <Route path="/" element={<Navigate to="/omtex/login" replace />} />
+
+      {/* Per-tenant routes */}
+      <Route path="/:tenant/*" element={
+        <TenantGuard>
+          <TenantInnerRoutes />
+        </TenantGuard>
+      } />
+
+      <Route path="*" element={<Navigate to="/omtex/login" replace />} />
+    </Routes>
+  );
+}
+
+function TenantInnerRoutes() {
+  const { tenant } = useParams();
+  return (
+    <Routes>
+      <Route path="login" element={<PublicRoute><Login /></PublicRoute>} />
+      <Route path="/" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+        <Route index element={<Navigate to={`/${tenant}/attendance`} replace />} />
         <Route path="attendance"              element={<AttendanceDashboard />} />
         <Route path="attendance/punch-report" element={<ComingSoon title="Punch Report" />} />
         <Route path="attendance/absent"       element={<ComingSoon title="Absent Employees" />} />
@@ -64,9 +94,8 @@ function AppRoutes() {
         <Route path="approvals/revisions"     element={<ComingSoon title="Salary Revisions" />} />
         <Route path="reports"                 element={<ComingSoon title="Reports" />} />
         <Route path="employees"               element={<ComingSoon title="Employee Master" />} />
-        <Route path="*"                       element={<Navigate to="/attendance" replace />} />
+        <Route path="*"                       element={<Navigate to={`/${tenant}/attendance`} replace />} />
       </Route>
-      <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
 }
