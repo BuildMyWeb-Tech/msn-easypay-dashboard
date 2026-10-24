@@ -6,7 +6,8 @@ import Login                  from "./pages/Login";
 import AttendanceDashboard    from "./pages/attendance/AttendanceDashboard";
 import PayrollDashboard       from "./pages/payroll/PayrollDashboard";
 import InstallPrompt          from "./components/InstallPrompt";
-import TENANTS                from "./config/tenants";
+import AdminCompanies         from "./pages/admin/AdminCompanies";
+import { useTenant }          from "./hooks/useTenant";
 
 function ComingSoon({ title }) {
   return (
@@ -18,15 +19,33 @@ function ComingSoon({ title }) {
   );
 }
 
-// Validates :tenant slug — unknown slugs redirect to /omtex
+// Resolves :tenant from API — shows spinner while loading, error if not found
 function TenantGuard({ children }) {
-  const { tenant } = useParams();
-  const location   = useLocation();
-  const isValid    = tenant && TENANTS[tenant.toLowerCase()];
-  if (!isValid) {
-    const rest = location.pathname.replace(`/${tenant}`, "") || "/login";
-    return <Navigate to={`/omtex${rest}`} replace />;
-  }
+  const { tenant }           = useParams();
+  const { loading, notFound } = useTenant();
+
+  if (loading) return (
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg)" }}>
+      <div style={{ textAlign: "center" }}>
+        <div className="spinner" style={{ margin: "0 auto 16px" }} />
+        <div style={{ fontSize: 13, color: "var(--text3)" }}>Loading…</div>
+      </div>
+    </div>
+  );
+
+  if (notFound) return (
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg)" }}>
+      <div style={{ textAlign: "center", maxWidth: 360 }}>
+        <div style={{ fontSize: 48, marginBottom: 12 }}>🏢</div>
+        <h2 style={{ fontWeight: 700, fontSize: 20, marginBottom: 8 }}>Company Not Found</h2>
+        <p style={{ color: "var(--text3)", fontSize: 14 }}>
+          <strong style={{ color: "var(--text)" }}>/{tenant}</strong> is not configured.<br />
+          Contact your administrator.
+        </p>
+      </div>
+    </div>
+  );
+
   return children;
 }
 
@@ -96,6 +115,8 @@ function TenantInnerRoutes() {
         <Route path="employees"               element={<ComingSoon title="Employee Master" />} />
         <Route path="*"                       element={<Navigate to={`/${tenant}/attendance`} replace />} />
       </Route>
+      {/* Admin — no auth guard, protected by ADMIN_KEY */}
+      <Route path="admin" element={<AdminCompanies />} />
     </Routes>
   );
 }
