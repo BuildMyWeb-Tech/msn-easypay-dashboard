@@ -27,7 +27,7 @@ export default function Login() {
     setLoading(true);
     try {
       // companyCode is implicitly taken from tenant config — user never types it
-      const companyCode = config?.companyCode || "";
+      const companyCode = config?.CompanyCode || config?.companyCode || "";
       await login(form.userName, form.password, companyCode);
       navigate(`/${tenant}/attendance`, { replace: true });
     } catch (err) {
@@ -56,7 +56,7 @@ export default function Login() {
               background: "var(--red-dim)", padding: "3px 12px",
               borderRadius: "var(--radius-xs)", letterSpacing: "0.05em",
             }}>
-              {config.name}
+              {config.CompanyName || config.name}
             </div>
           )}
         </div>
