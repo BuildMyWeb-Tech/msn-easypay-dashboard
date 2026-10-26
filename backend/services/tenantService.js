@@ -12,10 +12,24 @@ BEGIN
     IsActive    BIT           NOT NULL DEFAULT 1,
     CreatedAt   DATETIME      NOT NULL DEFAULT GETDATE()
   );
-  -- Seed the default omtex tenant
-  INSERT INTO DBoard_Companies (Slug, CompanyCode, CompanyId, CompanyName)
-  VALUES ('omtex', '5146688', 50, 'OM Textiles');
 END
+`;
+
+// Runs every startup — inserts missing companies, never overwrites existing rows
+const SEED_SQL = `
+MERGE DBoard_Companies AS t
+USING (VALUES
+  ('omtex',    '5146688', 50, 'OM Textiles'),
+  ('amman1',   '5146679', 34, 'Amman Unit 1'),
+  ('amman2',   '5146681', 40, 'Amman Unit 2'),
+  ('krg',      '5146672', 25, 'KRG'),
+  ('krgsolar', '5146703', 65, 'KRG Solar'),
+  ('ragatex',  '5146635',  5, 'Ragatex')
+) AS s (Slug, CompanyCode, CompanyId, CompanyName)
+ON t.Slug = s.Slug
+WHEN NOT MATCHED THEN
+  INSERT (Slug, CompanyCode, CompanyId, CompanyName)
+  VALUES (s.Slug, s.CompanyCode, s.CompanyId, s.CompanyName);
 `;
 
 let _initialized = false;
@@ -24,6 +38,7 @@ async function ensureTable() {
   if (_initialized) return;
   const pool = await poolPromise;
   await pool.request().query(INIT_SQL);
+  await pool.request().query(SEED_SQL);
   _initialized = true;
 }
 
