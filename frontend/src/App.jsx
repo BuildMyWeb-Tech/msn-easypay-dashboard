@@ -75,6 +75,18 @@ function PublicRoute({ children }) {
   return children;
 }
 
+// Handles bare /:tenant — sends to login if not authed, attendance if authed
+function TenantRoot() {
+  const { isAuthenticated, isLoading } = useAuth();
+  const { tenant } = useParams();
+  if (isLoading) return (
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg)" }}>
+      <div className="spinner" />
+    </div>
+  );
+  return <Navigate to={isAuthenticated ? `/${tenant}/attendance` : `/${tenant}/login`} replace />;
+}
+
 function AppRoutes() {
   return (
     <Routes>
@@ -97,6 +109,8 @@ function TenantInnerRoutes() {
   const { tenant } = useParams();
   return (
     <Routes>
+      {/* /:tenant → redirect to login if not authenticated, else to attendance */}
+      <Route index element={<TenantRoot />} />
       <Route path="login" element={<PublicRoute><Login /></PublicRoute>} />
       <Route path="/" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
         <Route index element={<Navigate to={`/${tenant}/attendance`} replace />} />
