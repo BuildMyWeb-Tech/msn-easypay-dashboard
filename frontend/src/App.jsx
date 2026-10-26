@@ -7,6 +7,7 @@ import AttendanceDashboard    from "./pages/attendance/AttendanceDashboard";
 import PayrollDashboard       from "./pages/payroll/PayrollDashboard";
 import InstallPrompt          from "./components/InstallPrompt";
 import AdminCompanies         from "./pages/admin/AdminCompanies";
+import CompanySearch          from "./pages/CompanySearch";
 import { useTenant }          from "./hooks/useTenant";
 
 function ComingSoon({ title }) {
@@ -90,8 +91,8 @@ function TenantRoot() {
 function AppRoutes() {
   return (
     <Routes>
-      {/* Root → default tenant login */}
-      <Route path="/" element={<Navigate to="/omtex/login" replace />} />
+      {/* Root → company search (no dropdown, user types slug) */}
+      <Route path="/" element={<CompanySearch />} />
 
       {/* Per-tenant routes */}
       <Route path="/:tenant/*" element={
@@ -100,7 +101,8 @@ function AppRoutes() {
         </TenantGuard>
       } />
 
-      <Route path="*" element={<Navigate to="/omtex/login" replace />} />
+      {/* Unknown path → company search */}
+      <Route path="*" element={<CompanySearch />} />
     </Routes>
   );
 }

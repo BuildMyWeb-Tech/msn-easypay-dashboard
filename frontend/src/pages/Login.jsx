@@ -2,10 +2,10 @@ import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useTenant } from "../hooks/useTenant";
-import { Eye, EyeOff, LogIn, LayoutDashboard } from "lucide-react";
+import { Eye, EyeOff, LogIn } from "lucide-react";
 
 export default function Login() {
-  const { login, demoLogin } = useAuth();
+  const { login } = useAuth();
   const navigate     = useNavigate();
   const { tenant }   = useParams();
   const { config }   = useTenant();          // company config from URL slug
@@ -76,8 +76,8 @@ export default function Login() {
             }}>{error}</div>
           )}
 
-          <Field label="Username" value={form.userName} onChange={set("userName")}
-            placeholder="Enter username" autoComplete="username" />
+          <Field label="User Name" value={form.userName} onChange={set("userName")}
+            placeholder="Enter user name" autoComplete="username" />
           <Field label="Password" type={showPwd ? "text" : "password"}
             value={form.password} onChange={set("password")}
             placeholder="Enter password" autoComplete="current-password"
@@ -98,28 +98,6 @@ export default function Login() {
               : <><LogIn size={15} /> Sign In</>}
           </button>
 
-          <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "4px 0" }}>
-            <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
-            <span style={{ fontSize: 11, color: "var(--text3)" }}>or</span>
-            <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
-          </div>
-
-          <button type="button"
-            style={{
-              width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
-              padding: "9px", background: "var(--surface2)", border: "1px solid var(--border)",
-              borderRadius: "var(--radius-xs)", color: "var(--text2)", fontSize: 13, fontWeight: 600,
-              cursor: "pointer", transition: "all .15s",
-            }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--primary)"; e.currentTarget.style.color = "var(--text)"; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.color = "var(--text2)"; }}
-            onClick={() => {
-              demoLogin();
-              navigate(`/${tenant}/attendance`, { replace: true });
-            }}
-            disabled={loading}>
-            <LayoutDashboard size={15} /> Preview Dashboard (Demo)
-          </button>
         </form>
 
         <div style={{ textAlign: "center", marginTop: 20, fontSize: 12, color: "var(--text3)" }}>

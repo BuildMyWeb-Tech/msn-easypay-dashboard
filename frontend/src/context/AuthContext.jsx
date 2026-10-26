@@ -47,22 +47,13 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  const demoLogin = useCallback(() => {
-    const session = {
-      userId: 0, userName: "Demo User", companyCode: "DEMO",
-      companyName: "OM Textiles (Demo)", companyId: 0, roleId: 0, isDemo: true,
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
-    setUser(session);
-  }, []);
-
   const logout = useCallback(() => {
     localStorage.removeItem(STORAGE_KEY);
     setUser(null);
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, isAuthenticated: !!user, login, demoLogin, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, isAuthenticated: !!user, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
