@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import {
   PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer,
-  BarChart, Bar, XAxis, YAxis, CartesianGrid,
+  BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid,
 } from "recharts";
 import { useAuth } from "../../context/AuthContext";
 import { useResponsive } from "../../hooks/useResponsive";
@@ -227,12 +227,12 @@ export default function AttendanceDashboard() {
             Demo Mode
           </span>
         )}
+        {/* Last processed — right-justified, highlighted */}
         {att.Dt && !loading && (
-          <span style={{
-            fontSize: 12, color: "var(--text3)", display: "flex", alignItems: "center", gap: 4,
-          }}>
-            <CalendarCheck size={13} style={{ color: "var(--blue)", flexShrink: 0 }} />
-            Last processed: <strong style={{ color: "var(--text2)" }}>{att.Dt}</strong>
+          <span style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 5,
+            fontSize: 13, fontWeight: 700, color: "var(--primary)", whiteSpace: "nowrap" }}>
+            <CalendarCheck size={14} style={{ color: "var(--primary)", flexShrink: 0 }} />
+            Last processed: <strong style={{ color: "var(--primary)" }}>{att.Dt}</strong>
           </span>
         )}
       </div>
@@ -321,15 +321,15 @@ export default function AttendanceDashboard() {
           <div className="card-header card-header-red">Weekly Strength Analysis</div>
           <div className="card-body">
             <ResponsiveContainer width="100%" height={isMobile ? 170 : 200}>
-              <BarChart data={weekly.strength} barCategoryGap="30%">
+              <LineChart data={weekly.strength}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                 <XAxis dataKey="DayName" tick={{ fill: "var(--text3)", fontSize: 11 }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fill: "var(--text3)", fontSize: 11 }} axisLine={false} tickLine={false} domain={["auto","auto"]} />
                 <Tooltip contentStyle={{ background: "var(--surface2)", border: "1px solid var(--border)", borderRadius: 8 }} />
                 <Legend iconSize={10} />
-                <Bar dataKey="CurrentWeek" name="Current Week" fill="#3b82f6"   radius={[4,4,0,0]} />
-                <Bar dataKey="PastWeek"    name="Past Week"    fill="#3b82f640" radius={[4,4,0,0]} />
-              </BarChart>
+                <Line type="monotone" dataKey="CurrentWeek" name="Current Week" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4, fill: "#3b82f6" }} activeDot={{ r: 6 }} />
+                <Line type="monotone" dataKey="PastWeek"    name="Past Week"    stroke="#94a3b8" strokeWidth={2} dot={{ r: 4, fill: "#94a3b8" }} activeDot={{ r: 6 }} />
+              </LineChart>
             </ResponsiveContainer>
           </div>
         </div>

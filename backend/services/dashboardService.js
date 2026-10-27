@@ -1,6 +1,6 @@
 const { sql, poolPromise } = require("../database/sqlConnection");
 
-// ─── SP: PR_GETDBOARD_DATA_01  @COMPID INTEGER, @Dt date ─────────────────────
+// ─── SP: PRW_GETDBOARD_DATA_01  @COMPID INTEGER, @Dt date ────────────────────
 // Returns 5 recordsets:
 //   [0] Donut   — [{Status, emp}]  (Present / Absent totals)
 //   [1] Pie     — [{empcount, department, typeeid, dt}]  (dept-wise absent)
@@ -12,7 +12,7 @@ async function getDashboardMain(companyId, date) {
   const res = await pool.request()
     .input("COMPID", sql.Int,  parseInt(companyId))
     .input("Dt",     sql.Date, date)
-    .execute("PR_GETDBOARD_DATA_01");
+    .execute("PRW_GETDBOARD_DATA_01");
 
   // SP returns 6 recordsets:
   //   [0] date header    {Dt}
