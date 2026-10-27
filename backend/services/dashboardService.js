@@ -87,13 +87,13 @@ async function getDeptSummary(companyId, date, dbName) {
   }));
 }
 
-// ─── Placeholder SPs — names TBD from manager ────────────────────────────────
+// ─── Accordion report SPs ─────────────────────────────────────────────────────
 
 async function getAbsentList(companyId, date, dbName) {
   const pool = await resolvePool(dbName);
   const res = await pool.request()
-    .input("COMPID", sql.Int, parseInt(companyId))
-    .input("Dt",     sql.Date, date)
+    .input("companyid", sql.Int,  parseInt(companyId))
+    .input("dt",        sql.Date, date)
     .execute("PRW_GetAbsentList");
   return res.recordset || [];
 }
@@ -101,52 +101,37 @@ async function getAbsentList(companyId, date, dbName) {
 async function getLateInList(companyId, date, dbName) {
   const pool = await resolvePool(dbName);
   const res = await pool.request()
-    .input("COMPID", sql.Int, parseInt(companyId))
-    .input("Dt",     sql.Date, date)
+    .input("companyid", sql.Int,  parseInt(companyId))
+    .input("dt",        sql.Date, date)
     .execute("PRW_GetLateInList");
   return res.recordset || [];
 }
 
+// SP name is PRW_GetPuchList (note: "Puch" not "Punch" — matches the actual SP)
 async function getPunchList(companyId, date, dbName) {
   const pool = await resolvePool(dbName);
   const res = await pool.request()
-    .input("COMPID", sql.Int, parseInt(companyId))
-    .input("Dt",     sql.Date, date)
-    .execute("PRW_GetPunchList");
+    .input("companyid", sql.Int,  parseInt(companyId))
+    .input("dt",        sql.Date, date)
+    .execute("PRW_GetPuchList");
   return res.recordset || [];
 }
 
 async function getOTList(companyId, date, dbName) {
   const pool = await resolvePool(dbName);
   const res = await pool.request()
-    .input("COMPID", sql.Int, parseInt(companyId))
-    .input("Dt",     sql.Date, date)
+    .input("companyid", sql.Int,  parseInt(companyId))
+    .input("dt",        sql.Date, date)
     .execute("PRW_GetOTList");
   return res.recordset || [];
 }
 
-async function getEmployeeList(companyId, dbName) {
+async function getLongAbsent(companyId, date, dbName) {
   const pool = await resolvePool(dbName);
   const res = await pool.request()
-    .input("COMPID", sql.Int, parseInt(companyId))
-    .execute("PRW_GetEmployeeList");
-  return res.recordset || [];
-}
-
-async function getLongAbsent(companyId, dbName) {
-  const pool = await resolvePool(dbName);
-  const res = await pool.request()
-    .input("COMPID", sql.Int, parseInt(companyId))
-    .execute("PRW_GetLongAbsent");
-  return res.recordset || [];
-}
-
-async function getGeoPunchList(companyId, date, dbName) {
-  const pool = await resolvePool(dbName);
-  const res = await pool.request()
-    .input("COMPID", sql.Int, parseInt(companyId))
-    .input("Dt",     sql.Date, date)
-    .execute("PRW_GetGeoPunchList");
+    .input("companyid", sql.Int,  parseInt(companyId))
+    .input("Dt",        sql.Date, date)
+    .execute("PRW_GetLongAbsentEmployees");
   return res.recordset || [];
 }
 
@@ -158,7 +143,5 @@ module.exports = {
   getLateInList,
   getPunchList,
   getOTList,
-  getEmployeeList,
   getLongAbsent,
-  getGeoPunchList,
 };

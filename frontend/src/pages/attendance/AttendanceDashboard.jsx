@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer,
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid,
@@ -66,11 +66,16 @@ const fmtDate = (d) => {
 };
 
 // ── Accordion ─────────────────────────────────────────────────
-function Accordion({ title, children }) {
+function Accordion({ title, children, onOpen }) {
   const [open, setOpen] = useState(false);
+  const toggle = () => {
+    const next = !open;
+    setOpen(next);
+    if (next && onOpen) onOpen();
+  };
   return (
     <div className="accordion">
-      <button className="accordion-trigger" onClick={() => setOpen(o => !o)}>
+      <button className="accordion-trigger" onClick={toggle}>
         <span>{title}</span>
         <ChevronDown size={16} className={`accordion-chevron ${open ? "open" : ""}`} />
       </button>
@@ -78,6 +83,73 @@ function Accordion({ title, children }) {
         {children}
       </div>
     </div>
+  );
+}
+
+// ── Generic lazy-load accordion report ────────────────────────
+function ReportAccordion({ title, endpoint, columns }) {
+  const [rows, setRows]       = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError]     = useState("");
+  const loaded = useRef(false);
+
+  const load = useCallback(async () => {
+    if (loaded.current) return;
+    loaded.current = true;
+    setLoading(true);
+    setError("");
+    try {
+      const res = await api.get(endpoint);
+      setRows(res.data?.data || []);
+    } catch {
+      setError("Failed to load data.");
+      setRows([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [endpoint]);
+
+  return (
+    <Accordion title={title} onOpen={load}>
+      <div style={{ padding: "0 0 4px" }}>
+        {loading && (
+          <div style={{ padding: "16px", display: "flex", alignItems: "center", gap: 8, color: "var(--text3)", fontSize: 13 }}>
+            <span className="spinner" style={{ width: 14, height: 14 }} /> Loading…
+          </div>
+        )}
+        {error && (
+          <div style={{ padding: "12px 16px", fontSize: 13, color: "var(--red)" }}>{error}</div>
+        )}
+        {rows !== null && !loading && (
+          rows.length === 0
+            ? <div style={{ padding: "12px 16px", fontSize: 13, color: "var(--text3)" }}>No records found.</div>
+            : (
+              <div style={{ overflowX: "auto" }}>
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Sl No</th>
+                      {columns.map(c => <th key={c.key}>{c.label}</th>)}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map((row, i) => (
+                      <tr key={i}>
+                        <td>{i + 1}</td>
+                        {columns.map(c => (
+                          <td key={c.key} style={c.style ? c.style(row[c.key]) : undefined}>
+                            {row[c.key] ?? "—"}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )
+        )}
+      </div>
+    </Accordion>
   );
 }
 
@@ -409,47 +481,70 @@ export default function AttendanceDashboard() {
 
       {/* ─ Accordion Reports ──────────────────────────────────── */}
       <div>
-        <Accordion title={`Absent Employees List as on : ${sectionLabel}`}>
-          <div style={{ padding: "12px 16px", fontSize: 13, color: "var(--text3)" }}>
-            Connect backend SP to view absent employee list.
-          </div>
-        </Accordion>
+        <ReportAccordion
+          key={`absent-${date}`}
+          title={`Absent Employees List as on : ${sectionLabel}`}
+          endpoint={`/dashboard/absent-list?date=${date}`}
+          columns={[
+            { key: "EmpCode",      label: "Emp Code" },
+            { key: "EmpName",      label: "Employee Name" },
+            { key: "Department",   label: "Department" },
+          ]}
+        />
 
-        <Accordion title={`Late In Employees List as on : ${sectionLabel}`}>
-          <div style={{ padding: "12px 16px", fontSize: 13, color: "var(--text3)" }}>
-            Connect backend SP to view late-in employee list.
-          </div>
-        </Accordion>
+        <ReportAccordion
+          key={`latein-${date}`}
+          title={`Late In Employees List as on : ${sectionLabel}`}
+          endpoint={`/dashboard/late-in?date=${date}`}
+          columns={[
+            { key: "EmpCode",    label: "Emp Code" },
+            { key: "EmpName",    label: "Employee Name" },
+            { key: "Department", label: "Department" },
+            { key: "TimeIn",     label: "Time In" },
+            { key: "LateBy",     label: "Late By" },
+          ]}
+        />
 
-        <Accordion title={`Employees Punch List as on : ${sectionLabel}`}>
-          <div style={{ padding: "12px 16px", fontSize: 13, color: "var(--text3)" }}>
-            Connect backend SP to view punch list.
-          </div>
-        </Accordion>
+        <ReportAccordion
+          key={`punch-${date}`}
+          title={`Employees Punch List as on : ${sectionLabel}`}
+          endpoint={`/dashboard/punch-list?date=${date}`}
+          columns={[
+            { key: "EmpCode",    label: "Emp Code" },
+            { key: "EmpName",    label: "Employee Name" },
+            { key: "Department", label: "Department" },
+            { key: "TimeIn",     label: "Time In" },
+            { key: "LunchOut",   label: "Lunch Out" },
+            { key: "LunchIn",    label: "Lunch In" },
+            { key: "TimeOut",    label: "Time Out" },
+          ]}
+        />
 
-        <Accordion title={`Employee OT List as on : ${sectionLabel}`}>
-          <div style={{ padding: "12px 16px", fontSize: 13, color: "var(--text3)" }}>
-            Connect backend SP to view OT list.
-          </div>
-        </Accordion>
+        <ReportAccordion
+          key={`longabsent-${date}`}
+          title="Employees Long Absent"
+          endpoint={`/dashboard/long-absent?date=${date}`}
+          columns={[
+            { key: "EmpCode",    label: "Emp Code" },
+            { key: "EmpName",    label: "Employee Name" },
+            { key: "Department", label: "Department" },
+            { key: "LastPunch",  label: "Last Punch" },
+            { key: "AbsentDays", label: "Absent Days", style: (v) => v > 0 ? { color: "var(--red)", fontWeight: 600 } : undefined },
+          ]}
+        />
 
-        <Accordion title="Employees Long Absent">
-          <div style={{ padding: "12px 16px", fontSize: 13, color: "var(--text3)" }}>
-            Connect backend SP to view long-absent list.
-          </div>
-        </Accordion>
-
-        <Accordion title="Geo Punch List">
-          <div style={{ padding: "12px 16px", fontSize: 13, color: "var(--text3)" }}>
-            No geo-punch records for this date.
-          </div>
-        </Accordion>
-
-        <Accordion title="Employee List">
-          <div style={{ padding: "12px 16px", fontSize: 13, color: "var(--text3)" }}>
-            Connect backend SP to view employee master list.
-          </div>
-        </Accordion>
+        <ReportAccordion
+          key={`ot-${date}`}
+          title={`Employee OT List as on : ${sectionLabel}`}
+          endpoint={`/dashboard/ot-list?date=${date}`}
+          columns={[
+            { key: "EmpCode",    label: "Emp Code" },
+            { key: "EmpName",    label: "Employee Name" },
+            { key: "Department", label: "Department" },
+            { key: "OT",         label: "OT" },
+            { key: "ApprovedOT", label: "Approved OT" },
+          ]}
+        />
       </div>
 
     </div>

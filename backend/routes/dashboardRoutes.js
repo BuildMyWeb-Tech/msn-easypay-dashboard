@@ -19,8 +19,6 @@ router.get("/absent-list",  ctrl.getAbsentList);
 router.get("/late-in",      ctrl.getLateIn);
 router.get("/punch-list",   ctrl.getPunchList);
 router.get("/ot-list",      ctrl.getOTList);
-router.get("/employee-list",ctrl.getEmployeeList);
 router.get("/long-absent",  ctrl.getLongAbsent);
-router.get("/geo-punch",    ctrl.getGeoPunch);
 
 module.exports = router;

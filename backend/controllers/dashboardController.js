@@ -67,27 +67,11 @@ exports.getOTList = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
-exports.getEmployeeList = async (req, res, next) => {
-  try {
-    const { companyId } = req.epUser;
-    const data = await svc.getEmployeeList(companyId, getDbName(req));
-    res.json({ success: true, data });
-  } catch (err) { next(err); }
-};
-
 exports.getLongAbsent = async (req, res, next) => {
   try {
     const { companyId } = req.epUser;
-    const data = await svc.getLongAbsent(companyId, getDbName(req));
-    res.json({ success: true, data });
-  } catch (err) { next(err); }
-};
-
-exports.getGeoPunch = async (req, res, next) => {
-  try {
-    const { companyId } = req.epUser;
     const date = req.query.date || today();
-    const data = await svc.getGeoPunchList(companyId, date, getDbName(req));
+    const data = await svc.getLongAbsent(companyId, date, getDbName(req));
     res.json({ success: true, data });
   } catch (err) { next(err); }
 };
