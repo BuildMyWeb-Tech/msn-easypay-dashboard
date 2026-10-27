@@ -10,10 +10,11 @@ api.interceptors.request.use(config => {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
-      const { userId, companyId, companyCode } = JSON.parse(stored);
+      const { userId, companyId, companyCode, dbName } = JSON.parse(stored);
       if (userId      != null) config.headers["userid"]      = String(userId);
       if (companyId   != null) config.headers["companyid"]   = String(companyId);
       if (companyCode != null) config.headers["companycode"] = String(companyCode);
+      if (dbName      != null) config.headers["dbname"]      = String(dbName);
     }
   } catch {}
   return config;

@@ -2,46 +2,40 @@ const svc = require("../services/dashboardService");
 
 const today = () => new Date().toISOString().split("T")[0];
 
-// GET /api/dashboard/main-data?date=YYYY-MM-DD
-// Calls PR_GETDBOARD_DATA_01 — returns 5 recordsets covering sections 1-5:
-//   donut, pie, empData, attend, turnover
+// dbName comes from request header 'dbname' set by frontend from session
+const getDbName = (req) => req.headers["dbname"] || req.epUser?.dbName || null;
+
 exports.getMainData = async (req, res, next) => {
   try {
     const { companyId } = req.epUser;
     const date = req.query.date || today();
-    const data = await svc.getDashboardMain(companyId, date);
+    const data = await svc.getDashboardMain(companyId, date, getDbName(req));
     res.json({ success: true, data });
   } catch (err) { next(err); }
 };
 
-// GET /api/dashboard/weekly-data
-// Calls PRW_GET_WEEKLYDEPTSTRENGTH — returns { strength[], absent[] }
 exports.getWeeklyData = async (req, res, next) => {
   try {
     const { companyId } = req.epUser;
-    const data = await svc.getWeeklyDeptStrength(companyId);
+    const data = await svc.getWeeklyDeptStrength(companyId, getDbName(req));
     res.json({ success: true, data });
   } catch (err) { next(err); }
 };
 
-// GET /api/dashboard/dept-summary?date=YYYY-MM-DD
-// Calls PRW_GetDeptSummary — department-wise ON Roll/Dayshift/Nightshift/Present/Absent/Present%
 exports.getDeptSummary = async (req, res, next) => {
   try {
     const { companyId } = req.epUser;
     const date = req.query.date || today();
-    const data = await svc.getDeptSummary(companyId, date);
+    const data = await svc.getDeptSummary(companyId, date, getDbName(req));
     res.json({ success: true, data });
   } catch (err) { next(err); }
 };
-
-// ─── Remaining report endpoints (SPs TBD) ────────────────────────────────────
 
 exports.getAbsentList = async (req, res, next) => {
   try {
     const { companyId } = req.epUser;
     const date = req.query.date || today();
-    const data = await svc.getAbsentList(companyId, date);
+    const data = await svc.getAbsentList(companyId, date, getDbName(req));
     res.json({ success: true, data });
   } catch (err) { next(err); }
 };
@@ -50,7 +44,7 @@ exports.getLateIn = async (req, res, next) => {
   try {
     const { companyId } = req.epUser;
     const date = req.query.date || today();
-    const data = await svc.getLateInList(companyId, date);
+    const data = await svc.getLateInList(companyId, date, getDbName(req));
     res.json({ success: true, data });
   } catch (err) { next(err); }
 };
@@ -59,7 +53,7 @@ exports.getPunchList = async (req, res, next) => {
   try {
     const { companyId } = req.epUser;
     const date = req.query.date || today();
-    const data = await svc.getPunchList(companyId, date);
+    const data = await svc.getPunchList(companyId, date, getDbName(req));
     res.json({ success: true, data });
   } catch (err) { next(err); }
 };
@@ -68,7 +62,7 @@ exports.getOTList = async (req, res, next) => {
   try {
     const { companyId } = req.epUser;
     const date = req.query.date || today();
-    const data = await svc.getOTList(companyId, date);
+    const data = await svc.getOTList(companyId, date, getDbName(req));
     res.json({ success: true, data });
   } catch (err) { next(err); }
 };
@@ -76,7 +70,7 @@ exports.getOTList = async (req, res, next) => {
 exports.getEmployeeList = async (req, res, next) => {
   try {
     const { companyId } = req.epUser;
-    const data = await svc.getEmployeeList(companyId);
+    const data = await svc.getEmployeeList(companyId, getDbName(req));
     res.json({ success: true, data });
   } catch (err) { next(err); }
 };
@@ -84,7 +78,7 @@ exports.getEmployeeList = async (req, res, next) => {
 exports.getLongAbsent = async (req, res, next) => {
   try {
     const { companyId } = req.epUser;
-    const data = await svc.getLongAbsent(companyId);
+    const data = await svc.getLongAbsent(companyId, getDbName(req));
     res.json({ success: true, data });
   } catch (err) { next(err); }
 };
@@ -93,7 +87,7 @@ exports.getGeoPunch = async (req, res, next) => {
   try {
     const { companyId } = req.epUser;
     const date = req.query.date || today();
-    const data = await svc.getGeoPunchList(companyId, date);
+    const data = await svc.getGeoPunchList(companyId, date, getDbName(req));
     res.json({ success: true, data });
   } catch (err) { next(err); }
 };

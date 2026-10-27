@@ -1,17 +1,15 @@
-const { sql, poolPromise } = require("../database/sqlConnection");
+const { sql, getPool } = require("../database/sqlConnection");
 
 // SP: PR_Validate_UserLogin @UserName, @Password, @companyid
 // Returns: ResponseCode (100=success), ResponseMessage, UID, UserName
-async function login(userName, password, companyCode, companyId) {
-  const pool = await poolPromise;
-
-  // companyId comes from tenant config (resolved from URL slug)
-  const cid = parseInt(companyId) || parseInt(process.env.DEFAULT_COMPANY_ID || "50");
+async function login(userName, password, companyCode, companyId, dbName) {
+  const cid  = parseInt(companyId) || parseInt(process.env.DEFAULT_COMPANY_ID || "50");
+  const pool = await getPool(dbName || process.env.DB_NAME);
 
   const result = await pool.request()
-    .input("UserName",   sql.NVarChar(50), userName)
-    .input("Password",   sql.NVarChar(50), password)
-    .input("companyid",  sql.Int,          cid)
+    .input("UserName",  sql.NVarChar(50), userName)
+    .input("Password",  sql.NVarChar(50), password)
+    .input("companyid", sql.Int,          cid)
     .execute("PR_Validate_UserLogin");
 
   const row = result.recordset?.[0];
@@ -24,6 +22,7 @@ async function login(userName, password, companyCode, companyId) {
     UserName:    row.UserName,
     CompanyId:   cid,
     CompanyCode: companyCode,
+    DbName:      dbName,
     CompanyName: "",
     RoleId:      0,
   };

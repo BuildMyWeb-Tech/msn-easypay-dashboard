@@ -1,4 +1,10 @@
-const { sql, poolPromise } = require("../database/sqlConnection");
+const { sql, poolPromise, getPool } = require("../database/sqlConnection");
+
+// Helper — use company-specific DB pool if dbName provided, else default pool
+async function resolvePool(dbName) {
+  if (dbName) return getPool(dbName);
+  return poolPromise;
+}
 
 // ─── SP: PRW_GETDBOARD_DATA_01  @COMPID INTEGER, @Dt date ────────────────────
 // Returns 5 recordsets:
@@ -7,12 +13,16 @@ const { sql, poolPromise } = require("../database/sqlConnection");
 //   [2] EmpData — [{Branches, Dept, TotalEmployees, NewEmp, LeftEmp, MaleEmp, FemaleEmp}]
 //   [3] Attend  — [{Dt, Pre, Ab, Ir}]  (last processing + daily counts)
 //   [4] Turnover— [{FNew, MNew, FLeft, MLeft}]
-async function getDashboardMain(companyId, date) {
-  const pool = await poolPromise;
+// omtex (meb01) has PRW_GETDBOARD_DATA_01; all other DBs have PR_GETDBOARD_DATA_01
+const MAIN_SP = (dbName) =>
+  (!dbName || dbName === "meb01") ? "PRW_GETDBOARD_DATA_01" : "PR_GETDBOARD_DATA_01";
+
+async function getDashboardMain(companyId, date, dbName) {
+  const pool = await resolvePool(dbName);
   const res = await pool.request()
     .input("COMPID", sql.Int,  parseInt(companyId))
     .input("Dt",     sql.Date, date)
-    .execute("PRW_GETDBOARD_DATA_01");
+    .execute(MAIN_SP(dbName));
 
   // SP returns 6 recordsets:
   //   [0] date header    {Dt}
@@ -38,8 +48,8 @@ async function getDashboardMain(companyId, date) {
 //   [2] Current week absent   — [{dt, empabsent}]
 //   [3] Past week absent      — [{dt, empabsent}]
 // Merged into {strength[], absent[]} with {DayName, CurrentWeek, PastWeek}
-async function getWeeklyDeptStrength(companyId) {
-  const pool = await poolPromise;
+async function getWeeklyDeptStrength(companyId, dbName) {
+  const pool = await resolvePool(dbName);
   const res = await pool.request()
     .input("COMPANYID", sql.Int, parseInt(companyId))
     .execute("PRW_GET_WEEKLYDEPTSTRENGTH");
@@ -61,8 +71,8 @@ async function getWeeklyDeptStrength(companyId) {
 // ─── SP: PRW_GetDeptSummary  @Companyid int, @dt date ────────────────────────
 // Returns: [{present, deptname, onroll}]
 // Absent and PresentPct are derived: Absent = OnRoll - Present
-async function getDeptSummary(companyId, date) {
-  const pool = await poolPromise;
+async function getDeptSummary(companyId, date, dbName) {
+  const pool = await resolvePool(dbName);
   const res = await pool.request()
     .input("Companyid", sql.Int,  parseInt(companyId))
     .input("dt",        sql.Date, date)
@@ -79,8 +89,8 @@ async function getDeptSummary(companyId, date) {
 
 // ─── Placeholder SPs — names TBD from manager ────────────────────────────────
 
-async function getAbsentList(companyId, date) {
-  const pool = await poolPromise;
+async function getAbsentList(companyId, date, dbName) {
+  const pool = await resolvePool(dbName);
   const res = await pool.request()
     .input("COMPID", sql.Int, parseInt(companyId))
     .input("Dt",     sql.Date, date)
@@ -88,8 +98,8 @@ async function getAbsentList(companyId, date) {
   return res.recordset || [];
 }
 
-async function getLateInList(companyId, date) {
-  const pool = await poolPromise;
+async function getLateInList(companyId, date, dbName) {
+  const pool = await resolvePool(dbName);
   const res = await pool.request()
     .input("COMPID", sql.Int, parseInt(companyId))
     .input("Dt",     sql.Date, date)
@@ -97,8 +107,8 @@ async function getLateInList(companyId, date) {
   return res.recordset || [];
 }
 
-async function getPunchList(companyId, date) {
-  const pool = await poolPromise;
+async function getPunchList(companyId, date, dbName) {
+  const pool = await resolvePool(dbName);
   const res = await pool.request()
     .input("COMPID", sql.Int, parseInt(companyId))
     .input("Dt",     sql.Date, date)
@@ -106,8 +116,8 @@ async function getPunchList(companyId, date) {
   return res.recordset || [];
 }
 
-async function getOTList(companyId, date) {
-  const pool = await poolPromise;
+async function getOTList(companyId, date, dbName) {
+  const pool = await resolvePool(dbName);
   const res = await pool.request()
     .input("COMPID", sql.Int, parseInt(companyId))
     .input("Dt",     sql.Date, date)
@@ -115,24 +125,24 @@ async function getOTList(companyId, date) {
   return res.recordset || [];
 }
 
-async function getEmployeeList(companyId) {
-  const pool = await poolPromise;
+async function getEmployeeList(companyId, dbName) {
+  const pool = await resolvePool(dbName);
   const res = await pool.request()
     .input("COMPID", sql.Int, parseInt(companyId))
     .execute("PRW_GetEmployeeList");
   return res.recordset || [];
 }
 
-async function getLongAbsent(companyId) {
-  const pool = await poolPromise;
+async function getLongAbsent(companyId, dbName) {
+  const pool = await resolvePool(dbName);
   const res = await pool.request()
     .input("COMPID", sql.Int, parseInt(companyId))
     .execute("PRW_GetLongAbsent");
   return res.recordset || [];
 }
 
-async function getGeoPunchList(companyId, date) {
-  const pool = await poolPromise;
+async function getGeoPunchList(companyId, date, dbName) {
+  const pool = await resolvePool(dbName);
   const res = await pool.request()
     .input("COMPID", sql.Int, parseInt(companyId))
     .input("Dt",     sql.Date, date)

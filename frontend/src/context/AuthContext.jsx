@@ -16,9 +16,9 @@ export function AuthProvider({ children }) {
     setLoading(false);
   }, []);
 
-  const login = useCallback(async (userName, password, companyCode, companyId) => {
+  const login = useCallback(async (userName, password, companyCode, companyId, slug) => {
     try {
-      const res = await api.post("/auth/login", { userName, password, companyCode, companyId });
+      const res = await api.post("/auth/login", { userName, password, companyCode, companyId, slug });
       const data = res.data.data;
       const session = {
         userId:      data.UserId      ?? data.userid      ?? data.UserID,
@@ -26,6 +26,7 @@ export function AuthProvider({ children }) {
         companyId:   data.CompanyId   ?? data.companyid,
         companyCode: data.CompanyCode ?? data.companycode ?? companyCode,
         companyName: data.CompanyName ?? data.companyname ?? "",
+        dbName:      data.DbName      ?? data.dbname      ?? null,
         roleId:      data.RoleId      ?? data.roleid      ?? 0,
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
