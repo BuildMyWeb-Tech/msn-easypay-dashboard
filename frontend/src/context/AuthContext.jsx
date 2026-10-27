@@ -16,9 +16,9 @@ export function AuthProvider({ children }) {
     setLoading(false);
   }, []);
 
-  const login = useCallback(async (userName, password, companyCode) => {
+  const login = useCallback(async (userName, password, companyCode, companyId) => {
     try {
-      const res = await api.post("/auth/login", { userName, password, companyCode });
+      const res = await api.post("/auth/login", { userName, password, companyCode, companyId });
       const data = res.data.data;
       const session = {
         userId:      data.UserId      ?? data.userid      ?? data.UserID,

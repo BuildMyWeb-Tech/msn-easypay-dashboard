@@ -34,7 +34,8 @@ export default function Login() {
     setLoading(true);
     try {
       const companyCode = config?.CompanyCode || config?.companyCode || "";
-      await login(form.userName, form.password, companyCode);
+      const companyId   = config?.CompanyId   || config?.companyId   || "";
+      await login(form.userName, form.password, companyCode, companyId);
       navigate(`/${tenant}/attendance`, { replace: true });
     } catch (err) {
       setError(err.response?.data?.message || "Login failed. Please check your credentials.");
