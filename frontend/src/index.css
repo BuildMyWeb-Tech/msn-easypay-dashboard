@@ -200,6 +200,7 @@ input, select, textarea { font-family: inherit; }
   gap: 10px;
   flex-shrink: 0;
   z-index: 100;
+  position: relative;
 }
 .topbar-hamburger {
   background: none; border: none;

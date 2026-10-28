@@ -183,6 +183,19 @@ export default function AppLayout() {
             )}
           </div>
 
+          {/* Company name — centered */}
+          {!isMobile && companyName && (
+            <div style={{
+              position: "absolute", left: "50%", transform: "translateX(-50%)",
+              fontSize: 14, fontWeight: 700, color: "var(--primary)",
+              background: "var(--red-dim)", padding: "5px 16px",
+              borderRadius: 20, letterSpacing: "0.02em", whiteSpace: "nowrap",
+              pointerEvents: "none",
+            }}>
+              {companyName}
+            </div>
+          )}
+
           {/* Right actions */}
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
             {/* Theme toggle */}

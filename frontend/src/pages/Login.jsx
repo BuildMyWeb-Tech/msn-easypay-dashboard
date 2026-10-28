@@ -56,13 +56,14 @@ export default function Login() {
         }
         /* Left branding panel */
         .login-left {
-          flex: 1;
+          flex: 0 0 38%;
+          max-width: 460px;
           background: var(--primary);
           color: #fff;
           display: flex;
           flex-direction: column;
           justify-content: center;
-          padding: 48px 40px;
+          padding: 48px 36px;
           min-width: 0;
         }
         .login-left-logo {
@@ -134,18 +135,23 @@ export default function Login() {
         }
         /* Right form panel */
         .login-right {
-          flex: 0 0 440px;
+          flex: 1;
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          padding: 48px 40px;
-          background: var(--surface);
+          padding: 48px 32px;
+          background: var(--bg);
           border-left: 1px solid var(--border);
         }
         .login-form-inner {
           width: 100%;
-          max-width: 360px;
+          max-width: 420px;
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-radius: 16px;
+          padding: 40px 36px;
+          box-shadow: 0 4px 24px rgba(0,0,0,0.06);
         }
         .login-welcome {
           font-size: 26px;
