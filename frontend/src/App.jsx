@@ -3,8 +3,10 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation, useParams } from "
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import AppLayout              from "./components/AppLayout";
 import Login                  from "./pages/Login";
-import AttendanceDashboard    from "./pages/attendance/AttendanceDashboard";
-import PayrollDashboard       from "./pages/payroll/PayrollDashboard";
+import AttendanceDashboard      from "./pages/attendance/AttendanceDashboard";
+import PayrollDashboard         from "./pages/payroll/PayrollDashboard";
+import OTApproval               from "./pages/approvals/OTApproval";
+import IrregularPunchApproval   from "./pages/approvals/IrregularPunchApproval";
 import InstallPrompt          from "./components/InstallPrompt";
 import AdminCompanies         from "./pages/admin/AdminCompanies";
 import CompanySearch          from "./pages/CompanySearch";
@@ -124,7 +126,10 @@ function TenantInnerRoutes() {
         <Route path="attendance/ot"           element={<ComingSoon title="OT Report" />} />
         <Route path="payroll"                 element={<PayrollDashboard />} />
         <Route path="payroll/reports"         element={<ComingSoon title="Salary Reports" />} />
-        <Route path="approvals/md"            element={<ComingSoon title="MD Approvals" />} />
+        <Route path="approvals/md"              element={<ComingSoon title="MD Approvals" />} />
+        <Route path="approvals/casual-leave"  element={<ComingSoon title="Casual Leave" />} />
+        <Route path="approvals/irregular-punch" element={<IrregularPunchApproval />} />
+        <Route path="approvals/overtime"      element={<OTApproval />} />
         <Route path="approvals/onboarding"    element={<ComingSoon title="New Onboarding" />} />
         <Route path="approvals/revisions"     element={<ComingSoon title="Salary Revisions" />} />
         <Route path="reports"                 element={<ComingSoon title="Reports" />} />
