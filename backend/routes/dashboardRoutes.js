@@ -19,6 +19,8 @@ router.get("/absent-list",  ctrl.getAbsentList);
 router.get("/late-in",      ctrl.getLateIn);
 router.get("/punch-list",   ctrl.getPunchList);
 router.get("/ot-list",      ctrl.getOTList);
-router.get("/long-absent",  ctrl.getLongAbsent);
+router.get("/long-absent",       ctrl.getLongAbsent);
+router.post("/ot-approve",       ctrl.approveOT);
+router.get("/irregular-punch",   ctrl.getIrregularPunch);
 
 module.exports = router;

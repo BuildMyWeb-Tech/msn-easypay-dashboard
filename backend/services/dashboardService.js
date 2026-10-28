@@ -135,6 +135,29 @@ async function getLongAbsent(companyId, date, dbName) {
   return res.recordset || [];
 }
 
+// ─── Approval SPs ────────────────────────────────────────────────────────────
+
+// Save OT approval — SP: PRW_ApproveOT (confirm exact name with manager)
+async function approveOT(companyId, empCode, date, approvedOT, dbName) {
+  const pool = await resolvePool(dbName);
+  await pool.request()
+    .input("companyid",  sql.Int,     parseInt(companyId))
+    .input("empcode",    sql.VarChar, String(empCode))
+    .input("dt",         sql.Date,    date)
+    .input("approvedot", sql.Int,     parseInt(approvedOT))
+    .execute("PRW_ApproveOT");
+}
+
+// Irregular Punch list — SP: PRW_GetIrregularPunchList (confirm exact name with manager)
+async function getIrregularPunchList(companyId, date, dbName) {
+  const pool = await resolvePool(dbName);
+  const res = await pool.request()
+    .input("companyid", sql.Int,  parseInt(companyId))
+    .input("dt",        sql.Date, date)
+    .execute("PRW_GetIrregularPunchList");
+  return res.recordset || [];
+}
+
 module.exports = {
   getDashboardMain,
   getWeeklyDeptStrength,
@@ -144,4 +167,6 @@ module.exports = {
   getPunchList,
   getOTList,
   getLongAbsent,
+  approveOT,
+  getIrregularPunchList,
 };

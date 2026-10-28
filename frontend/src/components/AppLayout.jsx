@@ -6,6 +6,7 @@ import {
   LayoutDashboard, Clock, ClipboardList, UserX, AlarmClock,
   MapPin, DollarSign, FileText, CheckCircle, UserPlus,
   TrendingUp, BarChart2, Users, LogOut, Menu, X, Sun, Moon,
+  CalendarCheck2, AlertCircle,
 } from "lucide-react";
 
 const NAV = [
@@ -29,9 +30,12 @@ const NAV = [
   {
     section: "Approvals",
     items: [
-      { path: "/approvals/md",         label: "MD Approvals",     Icon: CheckCircle },
-      { path: "/approvals/onboarding", label: "New Onboarding",   Icon: UserPlus },
-      { path: "/approvals/revisions",  label: "Salary Revisions", Icon: TrendingUp },
+      { path: "/approvals/md",              label: "MD Approvals",       Icon: CheckCircle },
+      { path: "/approvals/casual-leave",    label: "Casual Leave",       Icon: CalendarCheck2 },
+      { path: "/approvals/irregular-punch", label: "Irregular Punch",    Icon: AlertCircle },
+      { path: "/approvals/overtime",        label: "Over Time",          Icon: Clock },
+      { path: "/approvals/onboarding",      label: "New Onboarding",     Icon: UserPlus },
+      { path: "/approvals/revisions",       label: "Salary Revisions",   Icon: TrendingUp },
     ],
   },
   {
@@ -52,9 +56,12 @@ const PAGE_LABELS = {
   "/attendance/ot":           "OT Report",
   "/payroll":                 "Payroll Dashboard",
   "/payroll/reports":         "Salary Reports",
-  "/approvals/md":            "MD Approvals",
-  "/approvals/onboarding":    "New Onboarding",
-  "/approvals/revisions":     "Salary Revisions",
+  "/approvals/md":              "MD Approvals",
+  "/approvals/casual-leave":   "Casual Leave",
+  "/approvals/irregular-punch":"Irregular Punch",
+  "/approvals/overtime":       "Over Time",
+  "/approvals/onboarding":     "New Onboarding",
+  "/approvals/revisions":      "Salary Revisions",
   "/reports":                 "Reports",
   "/employees":               "Employee Master",
 };

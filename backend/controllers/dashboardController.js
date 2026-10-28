@@ -75,3 +75,21 @@ exports.getLongAbsent = async (req, res, next) => {
     res.json({ success: true, data });
   } catch (err) { next(err); }
 };
+
+exports.approveOT = async (req, res, next) => {
+  try {
+    const { companyId } = req.epUser;
+    const { empCode, date, approvedOT } = req.body;
+    await svc.approveOT(companyId, empCode, date || today(), approvedOT, getDbName(req));
+    res.json({ success: true, message: "OT approved" });
+  } catch (err) { next(err); }
+};
+
+exports.getIrregularPunch = async (req, res, next) => {
+  try {
+    const { companyId } = req.epUser;
+    const date = req.query.date || today();
+    const data = await svc.getIrregularPunchList(companyId, date, getDbName(req));
+    res.json({ success: true, data });
+  } catch (err) { next(err); }
+};
