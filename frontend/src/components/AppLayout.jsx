@@ -104,7 +104,7 @@ export default function AppLayout() {
         <div className="sidebar-logo-row">
           <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
             <img src="/msn-logo.png" alt="MSN"
-              style={{ height: 34, flexShrink: 0, objectFit: "contain" }}
+              style={{ height: 28, maxWidth: 34, flexShrink: 0, objectFit: "contain" }}
               onError={e => (e.target.style.display = "none")} />
             <div style={{ minWidth: 0 }}>
               <div style={{ fontSize: 13, fontWeight: 800, color: "var(--text)", lineHeight: 1.2, whiteSpace: "nowrap" }}>

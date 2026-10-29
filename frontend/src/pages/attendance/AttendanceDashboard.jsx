@@ -120,7 +120,7 @@ function ReportAccordion({ title, endpoint, columns }) {
         {error && (
           <div style={{ padding: "12px 16px", fontSize: 13, color: "var(--red)" }}>{error}</div>
         )}
-        {rows !== null && !loading && (
+        {rows !== null && !loading && !error && (
           rows.length === 0
             ? <div style={{ padding: "12px 16px", fontSize: 13, color: "var(--text3)" }}>No records found.</div>
             : (
