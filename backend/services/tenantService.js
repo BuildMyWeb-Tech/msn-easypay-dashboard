@@ -1,4 +1,32 @@
-const { sql, poolPromise } = require("../database/sqlConnection");
+const { sql, getPool } = require("../database/sqlConnection");
+
+// All company/customer config lives in MebAdmin — not in meb01 (customer DB)
+const ADMIN_DB = "MebAdmin";
+
+// getBySlug — calls PRW_GetDBDetails @cname from MebAdmin
+// SP returns: Responsecode, Responsemessage, ServerName, UserName, PassCode,
+//             DBName, CustomerName, Companyid
+async function getBySlug(slug) {
+  const pool = await getPool(ADMIN_DB);
+  const res = await pool.request()
+    .input("cname", sql.NVarChar(20), slug.toLowerCase())
+    .execute("PRW_GetDBDetails");
+
+  const row = res.recordset?.[0];
+  if (!row || row.Responsecode !== 100) return null;
+
+  return {
+    Slug:        slug.toLowerCase(),
+    CompanyCode: String(row.Companyid),   // no separate CompanyCode in SP; use Companyid
+    CompanyId:   row.Companyid,
+    CompanyName: row.CustomerName,
+    DbName:      row.DBName,
+    LogoUrl:     "/msn-logo.png",
+    IsActive:    1,
+  };
+}
+
+// ── Admin helpers — DBoard_Companies table in MebAdmin ───────────────────────
 
 const INIT_SQL = `
 IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'DBoard_Companies')
@@ -14,82 +42,53 @@ BEGIN
     CreatedAt   DATETIME      NOT NULL DEFAULT GETDATE()
   );
 END
--- Add DbName column if missing (migration for existing installs)
 IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id=OBJECT_ID('DBoard_Companies') AND name='DbName')
   ALTER TABLE DBoard_Companies ADD DbName NVARCHAR(100) NOT NULL DEFAULT '';
 `;
 
-// Runs every startup — upserts all companies with DbName (safe to re-run)
-const SEED_SQL = `
-MERGE DBoard_Companies AS t
-USING (VALUES
-  ('omtex',    '5146688', 50, 'OM Textiles',  'meb01'),
-  ('amman1',   '5146679', 34, 'Amman Unit 1', 'arrkaydb'),
-  ('amman2',   '5146681', 40, 'Amman Unit 2', 'acv'),
-  ('krg',      '5146672', 25, 'KRG',          'acvnilakottai'),
-  ('krgsolar', '5146703', 65, 'KRG Solar',    'Myla_SVKintsAPMS'),
-  ('ragatex',  '5146635',  5, 'Ragatex',      'Svknitsadmintest')
-) AS s (Slug, CompanyCode, CompanyId, CompanyName, DbName)
-ON t.Slug = s.Slug
-WHEN MATCHED AND (t.DbName = '' OR t.DbName IS NULL) THEN
-  UPDATE SET t.DbName = s.DbName, t.CompanyName = s.CompanyName
-WHEN NOT MATCHED THEN
-  INSERT (Slug, CompanyCode, CompanyId, CompanyName, DbName)
-  VALUES (s.Slug, s.CompanyCode, s.CompanyId, s.CompanyName, s.DbName);
-`;
+let _adminTableReady = false;
 
-let _initialized = false;
-
-async function ensureTable() {
-  if (_initialized) return;
-  const pool = await poolPromise;
+async function ensureAdminTable() {
+  if (_adminTableReady) return;
+  const pool = await getPool(ADMIN_DB);
   await pool.request().query(INIT_SQL);
-  await pool.request().query(SEED_SQL);
-  _initialized = true;
+  _adminTableReady = true;
 }
 
 async function getAll() {
-  await ensureTable();
-  const pool = await poolPromise;
+  await ensureAdminTable();
+  const pool = await getPool(ADMIN_DB);
   const res = await pool.request().query(
     "SELECT Slug, CompanyCode, CompanyId, CompanyName, DbName, LogoUrl, IsActive FROM DBoard_Companies ORDER BY CreatedAt"
   );
   return res.recordset;
 }
 
-async function getBySlug(slug) {
-  await ensureTable();
-  const pool = await poolPromise;
-  const res = await pool.request()
-    .input("Slug", sql.NVarChar(50), slug.toLowerCase())
-    .query("SELECT Slug, CompanyCode, CompanyId, CompanyName, DbName, LogoUrl, IsActive FROM DBoard_Companies WHERE Slug = @Slug AND IsActive = 1");
-  return res.recordset[0] || null;
-}
-
-async function upsert({ slug, companyCode, companyId, companyName, logoUrl }) {
-  await ensureTable();
-  const pool = await poolPromise;
+async function upsert({ slug, companyCode, companyId, companyName, dbName, logoUrl }) {
+  await ensureAdminTable();
+  const pool = await getPool(ADMIN_DB);
   await pool.request()
     .input("Slug",        sql.NVarChar(50),  slug.toLowerCase().replace(/[^a-z0-9]/g, ""))
-    .input("CompanyCode", sql.NVarChar(50),  companyCode)
+    .input("CompanyCode", sql.NVarChar(50),  companyCode || "")
     .input("CompanyId",   sql.Int,           parseInt(companyId))
     .input("CompanyName", sql.NVarChar(200), companyName || "")
+    .input("DbName",      sql.NVarChar(100), dbName || "")
     .input("LogoUrl",     sql.NVarChar(500), logoUrl || "/msn-logo.png")
     .query(`
       MERGE DBoard_Companies AS target
       USING (SELECT @Slug AS Slug) AS source ON target.Slug = source.Slug
       WHEN MATCHED THEN
         UPDATE SET CompanyCode=@CompanyCode, CompanyId=@CompanyId,
-                   CompanyName=@CompanyName, LogoUrl=@LogoUrl, IsActive=1
+                   CompanyName=@CompanyName, DbName=@DbName, LogoUrl=@LogoUrl, IsActive=1
       WHEN NOT MATCHED THEN
-        INSERT (Slug, CompanyCode, CompanyId, CompanyName, LogoUrl)
-        VALUES (@Slug, @CompanyCode, @CompanyId, @CompanyName, @LogoUrl);
+        INSERT (Slug, CompanyCode, CompanyId, CompanyName, DbName, LogoUrl)
+        VALUES (@Slug, @CompanyCode, @CompanyId, @CompanyName, @DbName, @LogoUrl);
     `);
 }
 
 async function setActive(slug, active) {
-  await ensureTable();
-  const pool = await poolPromise;
+  await ensureAdminTable();
+  const pool = await getPool(ADMIN_DB);
   await pool.request()
     .input("Slug",     sql.NVarChar(50), slug.toLowerCase())
     .input("IsActive", sql.Bit,          active ? 1 : 0)
