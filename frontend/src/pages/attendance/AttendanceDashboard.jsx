@@ -486,9 +486,9 @@ export default function AttendanceDashboard() {
           title={`Absent Employees List as on : ${sectionLabel}`}
           endpoint={`/dashboard/absent-list?date=${date}`}
           columns={[
-            { key: "EmpCode",      label: "Emp Code" },
-            { key: "EmpName",      label: "Employee Name" },
-            { key: "Department",   label: "Department" },
+            { key: "empcode",   label: "Emp Code" },
+            { key: "empname",   label: "Employee Name" },
+            { key: "deptname",  label: "Department" },
           ]}
         />
 
@@ -497,11 +497,11 @@ export default function AttendanceDashboard() {
           title={`Late In Employees List as on : ${sectionLabel}`}
           endpoint={`/dashboard/late-in?date=${date}`}
           columns={[
-            { key: "EmpCode",    label: "Emp Code" },
-            { key: "EmpName",    label: "Employee Name" },
-            { key: "Department", label: "Department" },
-            { key: "TimeIn",     label: "Time In" },
-            { key: "LateBy",     label: "Late By" },
+            { key: "empcode",   label: "Emp Code" },
+            { key: "empname",   label: "Employee Name" },
+            { key: "deptname",  label: "Department" },
+            { key: "intime",    label: "Time In" },
+            { key: "lateby",    label: "Late By" },
           ]}
         />
 
@@ -510,13 +510,13 @@ export default function AttendanceDashboard() {
           title={`Employees Punch List as on : ${sectionLabel}`}
           endpoint={`/dashboard/punch-list?date=${date}`}
           columns={[
-            { key: "EmpCode",    label: "Emp Code" },
-            { key: "EmpName",    label: "Employee Name" },
-            { key: "Department", label: "Department" },
-            { key: "TimeIn",     label: "Time In" },
-            { key: "LunchOut",   label: "Lunch Out" },
-            { key: "LunchIn",    label: "Lunch In" },
-            { key: "TimeOut",    label: "Time Out" },
+            { key: "empcode",   label: "Emp Code" },
+            { key: "empname",   label: "Employee Name" },
+            { key: "deptname",  label: "Department" },
+            { key: "intime",    label: "Time In" },
+            { key: "lunchout",  label: "Lunch Out" },
+            { key: "lunchin",   label: "Lunch In" },
+            { key: "outtime",   label: "Time Out" },
           ]}
         />
 
@@ -525,9 +525,9 @@ export default function AttendanceDashboard() {
           title="Employees Long Absent"
           endpoint={`/dashboard/long-absent?date=${date}`}
           columns={[
-            { key: "EmpCode",    label: "Emp Code" },
-            { key: "EmpName",    label: "Employee Name" },
-            { key: "Department", label: "Department" },
+            { key: "empcode",    label: "Emp Code" },
+            { key: "empname",    label: "Employee Name" },
+            { key: "deptname",   label: "Department" },
             { key: "LastPunch",  label: "Last Punch" },
             { key: "AbsentDays", label: "Absent Days", style: (v) => v > 0 ? { color: "var(--red)", fontWeight: 600 } : undefined },
           ]}
@@ -538,10 +538,10 @@ export default function AttendanceDashboard() {
           title={`Employee OT List as on : ${sectionLabel}`}
           endpoint={`/dashboard/ot-list?date=${date}`}
           columns={[
-            { key: "EmpCode",    label: "Emp Code" },
-            { key: "EmpName",    label: "Employee Name" },
-            { key: "Department", label: "Department" },
-            { key: "OT",         label: "OT" },
+            { key: "empcode",    label: "Emp Code" },
+            { key: "empname",    label: "Employee Name" },
+            { key: "deptname",   label: "Department" },
+            { key: "Ot",         label: "OT" },
             { key: "ApprovedOT", label: "Approved OT" },
           ]}
         />

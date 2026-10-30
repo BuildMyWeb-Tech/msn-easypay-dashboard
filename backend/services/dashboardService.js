@@ -113,7 +113,7 @@ async function getPunchList(companyId, date, dbName) {
   const res = await pool.request()
     .input("companyid", sql.Int,  parseInt(companyId))
     .input("dt",        sql.Date, date)
-    .execute("PRW_GetPuchList");
+    .execute("PRW_GetPunchList");
   return res.recordset || [];
 }
 
