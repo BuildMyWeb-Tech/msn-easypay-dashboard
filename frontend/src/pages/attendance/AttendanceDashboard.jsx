@@ -133,16 +133,24 @@ function ReportAccordion({ title, endpoint, columns }) {
                     </tr>
                   </thead>
                   <tbody>
-                    {rows.map((row, i) => (
-                      <tr key={i}>
-                        <td>{i + 1}</td>
-                        {columns.map(c => (
-                          <td key={c.key} style={c.style ? c.style(row[c.key]) : undefined}>
-                            {row[c.key] ?? "—"}
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
+                    {rows.map((row, i) => {
+                      const get = (key) => {
+                        if (row[key] !== undefined) return row[key];
+                        const lower = key.toLowerCase();
+                        const found = Object.keys(row).find(k => k.toLowerCase() === lower);
+                        return found !== undefined ? row[found] : undefined;
+                      };
+                      return (
+                        <tr key={i}>
+                          <td>{i + 1}</td>
+                          {columns.map(c => (
+                            <td key={c.key} style={c.style ? c.style(get(c.key)) : undefined}>
+                              {get(c.key) ?? "—"}
+                            </td>
+                          ))}
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
