@@ -9,8 +9,121 @@ import api from "../../services/api";
 import {
   Building2, Layers, Users, UserPlus, UserMinus, UsersRound,
   CalendarCheck, CheckCircle2, XCircle, AlertTriangle, ChevronDown,
-  RefreshCw, Eye,
+  RefreshCw, Eye, X, UserCheck, UserX, Percent,
 } from "lucide-react";
+
+// ── Department Detail Panel ───────────────────────────────────
+function DeptDetailPanel({ dept, date, onClose }) {
+  if (!dept) return null;
+  const presentPct = typeof dept.PresentPct === "number"
+    ? dept.PresentPct.toFixed(2) + "%"
+    : dept.PresentPct;
+  const absentPct = dept.OnRoll > 0
+    ? (((dept.Absent) / dept.OnRoll) * 100).toFixed(2) + "%"
+    : "0%";
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div onClick={onClose} style={{
+        position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)",
+        zIndex: 400, backdropFilter: "blur(2px)",
+      }} />
+
+      {/* Panel */}
+      <div style={{
+        position: "fixed", top: 0, right: 0, bottom: 0,
+        width: "min(380px, 100vw)",
+        background: "var(--surface)", borderLeft: "1px solid var(--border)",
+        zIndex: 401, display: "flex", flexDirection: "column",
+        boxShadow: "-4px 0 24px rgba(0,0,0,0.18)",
+        animation: "slideInRight 0.22s ease",
+      }}>
+        {/* Header */}
+        <div style={{
+          background: "var(--red)", padding: "18px 20px",
+          display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
+        }}>
+          <div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.75)", marginBottom: 2 }}>Department Details</div>
+            <div style={{ fontSize: 17, fontWeight: 700, color: "#fff", lineHeight: 1.2 }}>{dept.Department}</div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", marginTop: 3 }}>as on {date}</div>
+          </div>
+          <button onClick={onClose} style={{
+            background: "rgba(255,255,255,0.15)", border: "none", borderRadius: 8,
+            width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center",
+            cursor: "pointer", color: "#fff", flexShrink: 0,
+          }}>
+            <X size={16} />
+          </button>
+        </div>
+
+        {/* Stats grid */}
+        <div style={{ padding: 20, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          {[
+            { label: "ON Roll",    value: dept.OnRoll,   color: "var(--text)",  bg: "var(--surface2)", Icon: Users },
+            { label: "Present",    value: dept.Present,  color: "var(--green)", bg: "var(--green-dim)", Icon: UserCheck },
+            { label: "Absent",     value: dept.Absent,   color: dept.Absent > 0 ? "var(--red)" : "var(--text2)", bg: dept.Absent > 0 ? "var(--red-dim)" : "var(--surface2)", Icon: UserX },
+            { label: "Present %",  value: presentPct,    color: "var(--primary)", bg: "var(--red-dim)", Icon: Percent },
+          ].map(({ label, value, color, bg, Icon }) => (
+            <div key={label} style={{
+              background: bg, borderRadius: 12, padding: "16px 14px",
+              display: "flex", flexDirection: "column", gap: 6,
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--text3)", fontSize: 11 }}>
+                <Icon size={13} /> {label}
+              </div>
+              <div style={{ fontSize: 26, fontWeight: 800, color, lineHeight: 1 }}>{value ?? "—"}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Attendance bar */}
+        <div style={{ padding: "0 20px" }}>
+          <div style={{ fontSize: 12, color: "var(--text3)", marginBottom: 8 }}>Attendance Rate</div>
+          <div style={{ height: 10, borderRadius: 99, background: "var(--red-dim)", overflow: "hidden" }}>
+            <div style={{
+              height: "100%", borderRadius: 99,
+              width: typeof dept.PresentPct === "number" ? dept.PresentPct + "%" : "0%",
+              background: dept.PresentPct >= 75 ? "var(--green)" : dept.PresentPct >= 50 ? "var(--yellow)" : "var(--red)",
+              transition: "width 0.6s ease",
+            }} />
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6, fontSize: 11, color: "var(--text3)" }}>
+            <span style={{ color: "var(--green)" }}>Present {presentPct}</span>
+            <span style={{ color: "var(--red)" }}>Absent {absentPct}</span>
+          </div>
+        </div>
+
+        {/* Summary note */}
+        <div style={{ margin: "20px 20px 0", padding: "12px 14px", background: "var(--surface2)", borderRadius: 10, fontSize: 12, color: "var(--text3)", lineHeight: 1.6 }}>
+          {dept.Absent === 0
+            ? `✅ Full attendance — all ${dept.OnRoll} employees present.`
+            : `${dept.Absent} out of ${dept.OnRoll} employees are absent today in ${dept.Department}.`}
+        </div>
+
+        <div style={{ flex: 1 }} />
+
+        {/* Footer close */}
+        <div style={{ padding: 20, borderTop: "1px solid var(--border)" }}>
+          <button onClick={onClose} style={{
+            width: "100%", padding: "10px", borderRadius: 8, border: "1px solid var(--border)",
+            background: "var(--surface2)", color: "var(--text2)", fontSize: 13, fontWeight: 600, cursor: "pointer",
+          }}>
+            Close
+          </button>
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes slideInRight {
+          from { transform: translateX(100%); opacity: 0; }
+          to   { transform: translateX(0);    opacity: 1; }
+        }
+      `}</style>
+    </>
+  );
+}
 
 // ── Dummy fallback (demo mode / API down) ─────────────────────
 const DUMMY_MAIN = {
@@ -211,6 +324,7 @@ export default function AttendanceDashboard() {
   const { user }     = useAuth();
   const { isMobile } = useResponsive();
   const [date, setDate] = useState(() => new Date().toISOString().split("T")[0]);
+  const [selectedDept, setSelectedDept] = useState(null);
 
   // ── State ────────────────────────────────────────────────────
   const [main, setMain]       = useState(DUMMY_MAIN);
@@ -457,6 +571,7 @@ export default function AttendanceDashboard() {
                     <td>{typeof r.PresentPct === "number" ? r.PresentPct.toFixed(2) + "%" : r.PresentPct}</td>
                     <td>
                       <button className="btn btn-ghost btn-sm"
+                        onClick={() => setSelectedDept(r)}
                         style={{ padding: "3px 10px", color: "var(--blue)", fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 4, border: "1px solid var(--blue)", borderRadius: "var(--radius-xs)" }}
                         title={`View ${r.Department} details`}>
                         <Eye size={12} /> View
@@ -554,6 +669,13 @@ export default function AttendanceDashboard() {
           ]}
         />
       </div>
+
+      {/* Department Detail Panel */}
+      <DeptDetailPanel
+        dept={selectedDept}
+        date={sectionLabel}
+        onClose={() => setSelectedDept(null)}
+      />
 
     </div>
   );
