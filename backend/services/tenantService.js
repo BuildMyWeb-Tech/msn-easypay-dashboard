@@ -13,7 +13,7 @@ async function getBySlug(slug) {
     .execute("PRW_GetDBDetails");
 
   const row = res.recordset?.[0];
-  if (!row || row.Responsecode !== 100) return null;
+  if (!row || row.Responcecode !== 100) return null;
 
   return {
     Slug:        slug.toLowerCase(),
