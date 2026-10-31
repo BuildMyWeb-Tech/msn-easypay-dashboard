@@ -7,7 +7,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["msn-logo.png"],
+      includeAssets: ["msn-logo.png", "icon-192.png", "icon-512.png"],
 
       manifest: {
         name: "MSN EasyPay Dashboard",
@@ -17,26 +17,22 @@ export default defineConfig({
         background_color: "#f0f2f5",
         display: "standalone",
         orientation: "portrait-primary",
-        start_url: "/attendance",
+        start_url: "/",
         scope: "/",
         lang: "en",
         categories: ["business", "productivity"],
         icons: [
           {
-            src: "/msn-logo.png",
+            src: "/icon-192.png",
             sizes: "192x192",
             type: "image/png",
+            purpose: "any",
           },
           {
-            src: "/msn-logo.png",
+            src: "/icon-512.png",
             sizes: "512x512",
             type: "image/png",
-          },
-          {
-            src: "/msn-logo.png",
-            sizes: "512x512",
-            type: "image/png",
-            purpose: "maskable",
+            purpose: "any maskable",
           },
         ],
       },
