@@ -114,21 +114,6 @@ export default function InstallPrompt() {
             Add EasyPay to your home screen for quick one-tap access, offline support, and a full-screen app experience.
           </div>
 
-          {/* Benefits */}
-          {[
-            { icon: "⚡", text: "Instant access from home screen" },
-            { icon: "📶", text: "Works offline" },
-            { icon: "🖥️", text: "Full-screen, no browser bar" },
-          ].map(({ icon, text }) => (
-            <div key={text} style={{
-              display: "flex", alignItems: "center", gap: 10,
-              fontSize: 12, color: "var(--text2)", marginBottom: 8,
-            }}>
-              <span style={{ fontSize: 15, width: 22, textAlign: "center", flexShrink: 0 }}>{icon}</span>
-              {text}
-            </div>
-          ))}
-
           {isIos ? (
             /* iOS instructions */
             <div style={{
