@@ -454,15 +454,15 @@ export default function AttendanceDashboard() {
         <div className="card">
           <div className="card-header card-header-red">Departmentwise on : {sectionLabel}</div>
           <div className="card-body" style={{ display: "flex", justifyContent: "center" }}>
-            <ResponsiveContainer width="100%" height={isMobile ? 180 : 220}>
+            <ResponsiveContainer width="100%" height={isMobile ? 260 : 340}>
               <PieChart>
-                <Pie data={pieData} cx="50%" cy="50%"
-                  outerRadius={isMobile ? 68 : 90}
+                <Pie data={pieData} cx="50%" cy="45%"
+                  outerRadius={isMobile ? 80 : 110}
                   dataKey="value" nameKey="name" paddingAngle={2}>
                   {pieData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
                 </Pie>
                 <Tooltip formatter={(v, n) => [v, n]} />
-                <Legend iconSize={10} />
+                <Legend iconSize={10} wrapperStyle={{ paddingTop: 12 }} />
               </PieChart>
             </ResponsiveContainer>
           </div>

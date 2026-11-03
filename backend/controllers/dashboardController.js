@@ -93,3 +93,12 @@ exports.getIrregularPunch = async (req, res, next) => {
     res.json({ success: true, data });
   } catch (err) { next(err); }
 };
+
+exports.approveIrregularPunch = async (req, res, next) => {
+  try {
+    const { companyId } = req.epUser;
+    const { empCode, date } = req.body;
+    await svc.approveIrregularPunch(companyId, empCode, date || today(), getDbName(req));
+    res.json({ success: true, message: "Irregular punch approved" });
+  } catch (err) { next(err); }
+};
