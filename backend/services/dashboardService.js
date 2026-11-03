@@ -107,12 +107,13 @@ async function getLateInList(companyId, date, dbName) {
   return res.recordset || [];
 }
 
-// SP name is PRW_GetPuchList (note: "Puch" not "Punch" — matches the actual SP)
+// SP: PRW_GetPuchList @dt date, @companyid int, @deptname nvarchar(50)
 async function getPunchList(companyId, date, dbName) {
   const pool = await resolvePool(dbName);
   const res = await pool.request()
-    .input("companyid", sql.Int,  parseInt(companyId))
-    .input("dt",        sql.Date, date)
+    .input("dt",        sql.Date,    date)
+    .input("companyid", sql.Int,     parseInt(companyId))
+    .input("deptname",  sql.NVarChar(50), "ALL")
     .execute("PRW_GetPunchList");
   return res.recordset || [];
 }
@@ -148,14 +149,24 @@ async function approveOT(companyId, empCode, date, approvedOT, dbName) {
     .execute("PRW_ApproveOT");
 }
 
-// Irregular Punch list — SP: PRW_GetIrregularPunchList (confirm exact name with manager)
+// SP: PRW_Get_IrregularpunchData @dt date, @companyid int
 async function getIrregularPunchList(companyId, date, dbName) {
   const pool = await resolvePool(dbName);
   const res = await pool.request()
-    .input("companyid", sql.Int,  parseInt(companyId))
     .input("dt",        sql.Date, date)
-    .execute("PRW_GetIrregularPunchList");
+    .input("companyid", sql.Int,  parseInt(companyId))
+    .execute("PRW_Get_IrregularpunchData");
   return res.recordset || [];
+}
+
+// SP: PRW_Approve_IrregularPunch @dt date, @empcode varchar, @companyid int
+async function approveIrregularPunch(companyId, empCode, date, dbName) {
+  const pool = await resolvePool(dbName);
+  await pool.request()
+    .input("dt",        sql.Date,    date)
+    .input("empcode",   sql.VarChar, String(empCode))
+    .input("companyid", sql.Int,     parseInt(companyId))
+    .execute("PRW_Approve_IrregularPunch");
 }
 
 module.exports = {
@@ -169,4 +180,5 @@ module.exports = {
   getLongAbsent,
   approveOT,
   getIrregularPunchList,
+  approveIrregularPunch,
 };

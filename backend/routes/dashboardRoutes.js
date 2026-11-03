@@ -20,7 +20,8 @@ router.get("/late-in",      ctrl.getLateIn);
 router.get("/punch-list",   ctrl.getPunchList);
 router.get("/ot-list",      ctrl.getOTList);
 router.get("/long-absent",       ctrl.getLongAbsent);
-router.post("/ot-approve",       ctrl.approveOT);
-router.get("/irregular-punch",   ctrl.getIrregularPunch);
+router.post("/ot-approve",              ctrl.approveOT);
+router.get("/irregular-punch",          ctrl.getIrregularPunch);
+router.post("/irregular-punch-approve", ctrl.approveIrregularPunch);
 
 module.exports = router;

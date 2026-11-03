@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from "react";
 import { RefreshCw, CheckCircle2 } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 import api from "../../services/api";
 
 const fmtDate = (d) => {
@@ -10,10 +11,12 @@ const fmtDate = (d) => {
 };
 
 export default function IrregularPunchApproval() {
+  const { user } = useAuth();
   const [date, setDate]       = useState(() => new Date().toISOString().split("T")[0]);
   const [rows, setRows]       = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState("");
+  const [approving, setApproving] = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -29,12 +32,22 @@ export default function IrregularPunchApproval() {
   }, [date]);
 
   const handleApprove = async (row) => {
-    if (!window.confirm(`Approve irregular punch for ${row.EmpName ?? row.empname ?? "this employee"}?`)) return;
+    const empName = row.EmpName ?? row.empname ?? "this employee";
+    const empCode = row.EmpCode ?? row.empcode ?? row.EMPCODE;
+    if (!window.confirm(`Approve irregular punch for ${empName}?`)) return;
+    setApproving(empCode);
+    setError("");
     try {
-      // SP for approve TBD — confirm with manager
-      alert("Approval action — SP not yet configured. Contact administrator.");
+      await api.post("/dashboard/irregular-punch-approve", { empCode, date });
+      setRows(prev => prev.map(r =>
+        (r.EmpCode ?? r.empcode ?? r.EMPCODE) === empCode
+          ? { ...r, _approved: true }
+          : r
+      ));
     } catch {
-      setError("Failed to approve.");
+      setError("Failed to approve. Please try again.");
+    } finally {
+      setApproving(null);
     }
   };
 
@@ -95,34 +108,45 @@ export default function IrregularPunchApproval() {
             </thead>
             <tbody>
               {rows.map((row, i) => {
-                const empCode = row.EmpCode  ?? row.empcode  ?? row.EMPCODE;
-                const empName = row.EmpName  ?? row.empname  ?? row.EMPNAME;
-                const dept    = row.Department ?? row.department ?? row.DEPARTMENT;
-                const mcIn    = row.MCIn    ?? row.mcin    ?? row.MachinePunchIn  ?? "—";
-                const mcOut   = row.MCOut   ?? row.mcout   ?? row.MachinePunchOut ?? "—";
-                const manIn   = row.ManualIn  ?? row.manualin  ?? "—";
-                const manOut  = row.ManualOut ?? row.manualout ?? "—";
+                const empCode   = row.EmpCode  ?? row.empcode  ?? row.EMPCODE;
+                const empName   = row.EmpName  ?? row.empname  ?? row.EMPNAME;
+                const dept      = row.Department ?? row.department ?? row.DEPARTMENT ?? row.deptname;
+                const mcIn      = row.MCIn    ?? row.mcin    ?? row.MachinePunchIn  ?? "—";
+                const mcOut     = row.MCOut   ?? row.mcout   ?? row.MachinePunchOut ?? "—";
+                const manIn     = row.ManualIn  ?? row.manualin  ?? "—";
+                const manOut    = row.ManualOut ?? row.manualout ?? "—";
+                const isApproved = row._approved;
+                const isBusy    = approving === empCode;
                 return (
-                  <tr key={i}>
+                  <tr key={i} style={{ opacity: isApproved ? 0.6 : 1 }}>
                     <td>{i + 1}</td>
                     <td>{empCode}</td>
                     <td>{empName}</td>
-                    <td>{dept}</td>
+                    <td>{dept ?? "—"}</td>
                     <td>{mcIn}</td>
                     <td>{mcOut}</td>
                     <td style={{ color: manIn !== "—" ? "var(--text)" : "var(--text3)" }}>{manIn}</td>
                     <td style={{ color: manOut !== "—" ? "var(--text)" : "var(--text3)" }}>{manOut}</td>
                     <td>
-                      <button
-                        onClick={() => handleApprove(row)}
-                        style={{
-                          background: "var(--primary)", color: "#fff",
-                          border: "none", borderRadius: "var(--radius-xs)",
-                          padding: "4px 12px", fontSize: 12, fontWeight: 600,
-                          display: "inline-flex", alignItems: "center", gap: 4, cursor: "pointer",
-                        }}>
-                        <CheckCircle2 size={12} /> Approve
-                      </button>
+                      {isApproved ? (
+                        <span style={{ fontSize: 12, color: "var(--green)", fontWeight: 600 }}>✓ Approved</span>
+                      ) : (
+                        <button
+                          onClick={() => handleApprove(row)}
+                          disabled={isBusy}
+                          style={{
+                            background: "var(--primary)", color: "#fff",
+                            border: "none", borderRadius: "var(--radius-xs)",
+                            padding: "4px 12px", fontSize: 12, fontWeight: 600,
+                            display: "inline-flex", alignItems: "center", gap: 4,
+                            cursor: isBusy ? "not-allowed" : "pointer",
+                            opacity: isBusy ? 0.7 : 1,
+                          }}>
+                          {isBusy
+                            ? <span className="spinner" style={{ width: 10, height: 10, borderColor: "#fff3", borderTopColor: "#fff" }} />
+                            : <><CheckCircle2 size={12} /> Approve</>}
+                        </button>
+                      )}
                     </td>
                   </tr>
                 );
