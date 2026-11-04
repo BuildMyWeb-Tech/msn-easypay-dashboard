@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { RefreshCw, CheckCircle2, RotateCcw, X, AlertTriangle } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import api from "../../services/api";
@@ -34,6 +34,9 @@ export default function OTApproval() {
       setLoading(false);
     }
   }, [date]);
+
+  // Auto-load whenever date changes
+  useEffect(() => { load(); }, [load]);
 
   const openPanel = (row) => {
     setPanel({ row, approvedOT: String(row.OT ?? row.ot ?? 0) });

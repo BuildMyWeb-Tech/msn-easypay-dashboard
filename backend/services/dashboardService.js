@@ -92,10 +92,12 @@ async function getDeptSummary(companyId, date, dbName) {
 async function getAbsentList(companyId, date, dbName) {
   const pool = await resolvePool(dbName);
   const res = await pool.request()
-    .input("companyid", sql.Int,  parseInt(companyId))
     .input("dt",        sql.Date, date)
+    .input("companyid", sql.Int,  parseInt(companyId))
     .execute("PRW_GetAbsentList");
-  return res.recordset || [];
+  const rows = res.recordset || [];
+  if (rows.length > 0) console.log("[AbsentList] columns:", Object.keys(rows[0]));
+  return rows;
 }
 
 async function getLateInList(companyId, date, dbName) {
@@ -107,15 +109,24 @@ async function getLateInList(companyId, date, dbName) {
   return res.recordset || [];
 }
 
-// SP: PRW_GetPuchList @dt date, @companyid int, @deptname nvarchar(50)
+// SP: PRW_GetPunchList @dt date, @companyid int, @deptname nvarchar(50)
 async function getPunchList(companyId, date, dbName) {
   const pool = await resolvePool(dbName);
-  const res = await pool.request()
-    .input("dt",        sql.Date,    date)
-    .input("companyid", sql.Int,     parseInt(companyId))
-    .input("deptname",  sql.NVarChar(50), "ALL")
-    .execute("PRW_GetPunchList");
-  return res.recordset || [];
+  try {
+    const res = await pool.request()
+      .input("dt",        sql.Date,         date)
+      .input("companyid", sql.Int,          parseInt(companyId))
+      .input("deptname",  sql.NVarChar(50), "ALL")
+      .execute("PRW_GetPunchList");
+    return res.recordset || [];
+  } catch {
+    // Fallback: SP may not yet have @deptname param on this DB
+    const res = await pool.request()
+      .input("dt",        sql.Date, date)
+      .input("companyid", sql.Int,  parseInt(companyId))
+      .execute("PRW_GetPunchList");
+    return res.recordset || [];
+  }
 }
 
 async function getOTList(companyId, date, dbName) {
@@ -156,7 +167,9 @@ async function getIrregularPunchList(companyId, date, dbName) {
     .input("dt",        sql.Date, date)
     .input("companyid", sql.Int,  parseInt(companyId))
     .execute("PRW_Get_IrregularpunchData");
-  return res.recordset || [];
+  const rows = res.recordset || [];
+  if (rows.length > 0) console.log("[IrregularPunch] columns:", Object.keys(rows[0]));
+  return rows;
 }
 
 // SP: PRW_Approve_IrregularPunch @dt date, @empcode varchar, @companyid int

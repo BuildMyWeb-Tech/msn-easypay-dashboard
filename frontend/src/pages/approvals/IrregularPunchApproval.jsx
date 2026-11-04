@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { RefreshCw, CheckCircle2 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import api from "../../services/api";
@@ -30,6 +30,9 @@ export default function IrregularPunchApproval() {
       setLoading(false);
     }
   }, [date]);
+
+  // Auto-load on date change
+  useEffect(() => { load(); }, [load]);
 
   const handleApprove = async (row) => {
     const empName = row.EmpName ?? row.empname ?? "this employee";
@@ -108,25 +111,27 @@ export default function IrregularPunchApproval() {
             </thead>
             <tbody>
               {rows.map((row, i) => {
-                const empCode   = row.EmpCode  ?? row.empcode  ?? row.EMPCODE;
-                const empName   = row.EmpName  ?? row.empname  ?? row.EMPNAME;
-                const dept      = row.Department ?? row.department ?? row.DEPARTMENT ?? row.deptname;
-                const mcIn      = row.MCIn    ?? row.mcin    ?? row.MachinePunchIn  ?? "—";
-                const mcOut     = row.MCOut   ?? row.mcout   ?? row.MachinePunchOut ?? "—";
-                const manIn     = row.ManualIn  ?? row.manualin  ?? "—";
-                const manOut    = row.ManualOut ?? row.manualout ?? "—";
+                // Case-insensitive column lookup
+                const ci = (keys) => { for (const k of keys) { const v = Object.entries(row).find(([rk]) => rk.toLowerCase() === k.toLowerCase()); if (v && v[1] != null) return v[1]; } return undefined; };
+                const empCode   = ci(["empcode","empno","emp_code","employeecode"]);
+                const empName   = ci(["empname","employeename","emp_name","name"]);
+                const dept      = ci(["deptname","department","dept"]);
+                const mcIn      = ci(["mcin","machinein","machinepunchin","m_c_in","mcintime"]);
+                const mcOut     = ci(["mcout","machineout","machinepunchout","m_c_out","mcouttime"]);
+                const manIn     = ci(["manualin","manin","manual_in","manualintime"]);
+                const manOut    = ci(["manualout","manout","manual_out","manualouttime"]);
                 const isApproved = row._approved;
                 const isBusy    = approving === empCode;
                 return (
                   <tr key={i} style={{ opacity: isApproved ? 0.6 : 1 }}>
                     <td>{i + 1}</td>
-                    <td>{empCode}</td>
-                    <td>{empName}</td>
+                    <td>{empCode ?? "—"}</td>
+                    <td>{empName ?? "—"}</td>
                     <td>{dept ?? "—"}</td>
-                    <td>{mcIn}</td>
-                    <td>{mcOut}</td>
-                    <td style={{ color: manIn !== "—" ? "var(--text)" : "var(--text3)" }}>{manIn}</td>
-                    <td style={{ color: manOut !== "—" ? "var(--text)" : "var(--text3)" }}>{manOut}</td>
+                    <td>{mcIn ?? "—"}</td>
+                    <td>{mcOut ?? "—"}</td>
+                    <td style={{ color: manIn != null ? "var(--text)" : "var(--text3)" }}>{manIn ?? "—"}</td>
+                    <td style={{ color: manOut != null ? "var(--text)" : "var(--text3)" }}>{manOut ?? "—"}</td>
                     <td>
                       {isApproved ? (
                         <span style={{ fontSize: 12, color: "var(--green)", fontWeight: 600 }}>✓ Approved</span>

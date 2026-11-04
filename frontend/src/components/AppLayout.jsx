@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Clock, ClipboardList, UserX, AlarmClock,
   MapPin, DollarSign, FileText, CheckCircle, UserPlus,
   TrendingUp, BarChart2, Users, LogOut, Menu, X, Sun, Moon,
-  CalendarCheck2, AlertCircle,
+  CalendarCheck2, AlertCircle, RefreshCw,
 } from "lucide-react";
 
 const NAV = [
@@ -205,6 +205,15 @@ export default function AppLayout() {
 
           {/* Right actions */}
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+            {/* Sync / Refresh all data */}
+            <button
+              className="icon-btn"
+              onClick={() => window.location.reload()}
+              title="Sync & refresh all data"
+            >
+              <RefreshCw size={16} />
+            </button>
+
             {/* Theme toggle */}
             <button
               className="icon-btn"
