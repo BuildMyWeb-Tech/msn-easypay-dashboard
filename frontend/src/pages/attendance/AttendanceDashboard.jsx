@@ -672,11 +672,12 @@ export default function AttendanceDashboard() {
           title="Employees Long Absent"
           endpoint={`/dashboard/long-absent?date=${date}`}
           columns={[
-            { key: "empcode",    label: "Emp Code" },
-            { key: "empname",    label: "Employee Name" },
-            { key: "deptname",   label: "Department" },
-            { key: "LastPunch",  label: "Last Punch" },
-            { key: "AbsentDays", label: "Absent Days", style: (v) => v > 0 ? { color: "var(--red)", fontWeight: 600 } : undefined },
+            { key: "empcode",      label: "Emp Code" },
+            { key: "EmpName",      label: "Employee Name" },
+            { key: "DeptName",     label: "Department" },
+            { key: "branch",       label: "Branch" },
+            { key: "LastPunched",  label: "Last Punch" },
+            { key: "daysdiff",     label: "Absent Days", style: (v) => v > 0 ? { color: "var(--red)", fontWeight: 600 } : undefined },
           ]}
         />
 
