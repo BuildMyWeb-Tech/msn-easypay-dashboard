@@ -10,6 +10,24 @@ const fmtDate = (d) => {
   return dt.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
 };
 
+// Case-insensitive column getter — works for any SP column naming convention
+const col = (row, keys) => {
+  for (const k of keys) {
+    const entry = Object.entries(row).find(([rk]) => rk.toLowerCase() === k.toLowerCase());
+    if (entry && entry[1] != null) return entry[1];
+  }
+  return undefined;
+};
+
+const getEmpCode = (row) => col(row, ["Empcode", "empcode", "EmpCode", "empno", "emp_code", "employeecode"]);
+const getEmpName = (row) => col(row, ["Empname", "empname", "EmpName", "employeename", "emp_name", "name"]);
+const getDept    = (row) => col(row, ["Department", "deptname", "department", "dept"]);
+const getMcIn    = (row) => col(row, ["McIn", "mcin", "machinein", "machinepunchin", "m_c_in"]);
+const getMcOut   = (row) => col(row, ["McOut", "mcout", "machineout", "machinepunchout", "m_c_out"]);
+const getManIn   = (row) => col(row, ["ManualIn", "manualin", "manin", "manual_in"]);
+const getManOut  = (row) => col(row, ["Manualout", "manualout", "manout", "manual_out"]);
+const getIsApproved = (row) => col(row, ["IsApproved", "isapproved", "is_approved"]);
+
 export default function IrregularPunchApproval() {
   const { user } = useAuth();
   const [date, setDate]       = useState(() => new Date().toISOString().split("T")[0]);
@@ -35,14 +53,14 @@ export default function IrregularPunchApproval() {
   useEffect(() => { load(); }, [load]);
 
   const handleApprove = async (row) => {
-    const empName = row.EmpName ?? row.empname ?? "this employee";
-    const empCode = row.EmpCode ?? row.empcode ?? row.EMPCODE;
+    const empCode = getEmpCode(row);
+    const empName = getEmpName(row) ?? "this employee";
     if (!window.confirm(`Approve irregular punch for ${empName}?`)) return;
     setApproving(empCode);
     setError("");
     try {
       await api.post("/dashboard/irregular-punch-approve", { empCode, date });
-      // Reload grid after approval
+      // Reload grid so IsApproved status reflects DB state
       const res2 = await api.get(`/dashboard/irregular-punch?date=${date}`);
       setRows(res2.data?.data || []);
     } catch {
@@ -90,7 +108,7 @@ export default function IrregularPunchApproval() {
       <div style={{ overflowX: "auto" }}>
         {rows.length === 0 && !loading ? (
           <div style={{ padding: "32px", textAlign: "center", color: "var(--text3)", fontSize: 13 }}>
-            Select a date and click Show.
+            No records for selected date.
           </div>
         ) : (
           <table className="data-table">
@@ -109,19 +127,17 @@ export default function IrregularPunchApproval() {
             </thead>
             <tbody>
               {rows.map((row, i) => {
-                // Case-insensitive column lookup
-                const ci = (keys) => { for (const k of keys) { const v = Object.entries(row).find(([rk]) => rk.toLowerCase() === k.toLowerCase()); if (v && v[1] != null) return v[1]; } return undefined; };
-                const empCode   = ci(["empcode","empno","emp_code","employeecode"]);
-                const empName   = ci(["empname","employeename","emp_name","name"]);
-                const dept      = ci(["deptname","department","dept"]);
-                const mcIn      = ci(["mcin","machinein","machinepunchin","m_c_in","mcintime"]);
-                const mcOut     = ci(["mcout","machineout","machinepunchout","m_c_out","mcouttime"]);
-                const manIn     = ci(["manualin","manin","manual_in","manualintime"]);
-                const manOut    = ci(["manualout","manout","manual_out","manualouttime"]);
-                const isApproved = row._approved;
-                const isBusy    = approving === empCode;
+                const empCode    = getEmpCode(row);
+                const empName    = getEmpName(row);
+                const dept       = getDept(row);
+                const mcIn       = getMcIn(row);
+                const mcOut      = getMcOut(row);
+                const manIn      = getManIn(row);
+                const manOut     = getManOut(row);
+                const approved   = String(getIsApproved(row) ?? "").toLowerCase() === "yes";
+                const isBusy     = approving === empCode;
                 return (
-                  <tr key={i} style={{ opacity: isApproved ? 0.6 : 1 }}>
+                  <tr key={i} style={{ opacity: approved ? 0.65 : 1 }}>
                     <td>{i + 1}</td>
                     <td>{empCode ?? "—"}</td>
                     <td>{empName ?? "—"}</td>
@@ -131,7 +147,7 @@ export default function IrregularPunchApproval() {
                     <td style={{ color: manIn != null ? "var(--text)" : "var(--text3)" }}>{manIn ?? "—"}</td>
                     <td style={{ color: manOut != null ? "var(--text)" : "var(--text3)" }}>{manOut ?? "—"}</td>
                     <td>
-                      {isApproved ? (
+                      {approved ? (
                         <span style={{ fontSize: 12, color: "var(--green)", fontWeight: 600 }}>✓ Approved</span>
                       ) : (
                         <button
