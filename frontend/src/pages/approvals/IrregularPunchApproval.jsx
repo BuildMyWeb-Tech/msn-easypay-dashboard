@@ -26,7 +26,13 @@ const getMcIn    = (row) => col(row, ["McIn", "mcin", "machinein", "machinepunch
 const getMcOut   = (row) => col(row, ["McOut", "mcout", "machineout", "machinepunchout", "m_c_out"]);
 const getManIn   = (row) => col(row, ["ManualIn", "manualin", "manin", "manual_in"]);
 const getManOut  = (row) => col(row, ["Manualout", "manualout", "manout", "manual_out"]);
-const getIsApproved = (row) => col(row, ["IsApproved", "isapproved", "is_approved"]);
+const getIsApproved = (row) => {
+  if (row._approved) return "yes";
+  const v = col(row, ["IsApproved", "isapproved", "is_approved"]);
+  if (v == null) return "no";
+  const s = String(v).toLowerCase().trim();
+  return (s === "yes" || s === "1" || s === "true") ? "yes" : "no";
+};
 
 export default function IrregularPunchApproval() {
   const { user } = useAuth();
@@ -60,7 +66,8 @@ export default function IrregularPunchApproval() {
     setError("");
     try {
       await api.post("/dashboard/irregular-punch-approve", { empCode, date });
-      // Reload grid so IsApproved status reflects DB state
+      // Mark approved locally immediately, then reload grid from DB
+      setRows(prev => prev.map(r => getEmpCode(r) === empCode ? { ...r, _approved: true } : r));
       const res2 = await api.get(`/dashboard/irregular-punch?date=${date}`);
       setRows(res2.data?.data || []);
     } catch {
@@ -134,7 +141,7 @@ export default function IrregularPunchApproval() {
                 const mcOut      = getMcOut(row);
                 const manIn      = getManIn(row);
                 const manOut     = getManOut(row);
-                const approved   = String(getIsApproved(row) ?? "").toLowerCase() === "yes";
+                const approved   = getIsApproved(row) === "yes";
                 const isBusy     = approving === empCode;
                 return (
                   <tr key={i} style={{ opacity: approved ? 0.65 : 1 }}>
