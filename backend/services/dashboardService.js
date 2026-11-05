@@ -172,13 +172,13 @@ async function getIrregularPunchList(companyId, date, dbName) {
   return rows;
 }
 
-// SP: PRW_Approve_IrregularPunch @dt date, @empcode varchar, @companyid int
+// SP: PRW_Approve_IrregularPunch @dt date, @empcode nvarchar(50), @companyid int
 async function approveIrregularPunch(companyId, empCode, date, dbName) {
   const pool = await resolvePool(dbName);
   await pool.request()
-    .input("dt",        sql.Date,    date)
-    .input("empcode",   sql.VarChar, String(empCode))
-    .input("companyid", sql.Int,     parseInt(companyId))
+    .input("dt",        sql.Date,         date)
+    .input("empcode",   sql.NVarChar(50), String(empCode))
+    .input("companyid", sql.Int,          parseInt(companyId))
     .execute("PRW_Approve_IrregularPunch");
 }
 
