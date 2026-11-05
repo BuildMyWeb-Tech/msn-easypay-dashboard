@@ -42,11 +42,9 @@ export default function IrregularPunchApproval() {
     setError("");
     try {
       await api.post("/dashboard/irregular-punch-approve", { empCode, date });
-      setRows(prev => prev.map(r =>
-        (r.EmpCode ?? r.empcode ?? r.EMPCODE) === empCode
-          ? { ...r, _approved: true }
-          : r
-      ));
+      // Reload grid after approval
+      const res2 = await api.get(`/dashboard/irregular-punch?date=${date}`);
+      setRows(res2.data?.data || []);
     } catch {
       setError("Failed to approve. Please try again.");
     } finally {

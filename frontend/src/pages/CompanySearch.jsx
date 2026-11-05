@@ -75,7 +75,7 @@ export default function CompanySearch() {
                 type="text"
                 value={slug}
                 onChange={e => { setSlug(e.target.value); setError(""); }}
-                placeholder="e.g. omtex"
+                placeholder="e.g. msn"
                 autoFocus
                 autoCapitalize="none"
                 autoCorrect="off"
