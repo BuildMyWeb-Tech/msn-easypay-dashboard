@@ -38,8 +38,13 @@ export default function OTApproval() {
   // Auto-load whenever date changes
   useEffect(() => { load(); }, [load]);
 
+  // Case-insensitive row getter — SP returns empcode/empname/deptname/Ot/ApprovedOT
+  const rowGet = (row, keys) => { for (const k of keys) { const e = Object.entries(row).find(([rk]) => rk.toLowerCase() === k.toLowerCase()); if (e && e[1] != null) return e[1]; } return undefined; };
+  const rowEmpCode = (row) => rowGet(row, ["empcode","EmpCode","empno"]);
+  const rowOT      = (row) => rowGet(row, ["Ot","OT","ot"]) ?? 0;
+
   const openPanel = (row) => {
-    setPanel({ row, approvedOT: String(row.OT ?? row.ot ?? 0) });
+    setPanel({ row, approvedOT: String(rowOT(row)) });
     setConfirm(false);
   };
 
@@ -47,7 +52,7 @@ export default function OTApproval() {
 
   const handleSave = async () => {
     if (!panel) return;
-    const ot         = Number(panel.row.OT ?? panel.row.ot ?? 0);
+    const ot         = Number(rowOT(panel.row));
     const approvedOT = Number(panel.approvedOT);
     if (approvedOT > ot && !confirm) {
       setConfirm(true);
@@ -55,12 +60,10 @@ export default function OTApproval() {
     }
     setSaving(true);
     try {
-      const empCode = panel.row.EmpCode ?? panel.row.empcode ?? panel.row.EMPCODE;
+      const empCode = rowEmpCode(panel.row);
       await api.post("/dashboard/ot-approve", { empCode, date, approvedOT });
       setRows(prev => prev.map(r =>
-        (r.EmpCode ?? r.empcode ?? r.EMPCODE) === empCode
-          ? { ...r, ApprovedOT: approvedOT }
-          : r
+        rowEmpCode(r) === empCode ? { ...r, ApprovedOT: approvedOT } : r
       ));
       closePanel();
     } catch {
@@ -73,12 +76,10 @@ export default function OTApproval() {
   const handleReverse = async (row) => {
     if (!window.confirm("Reverse OT approval for this employee?")) return;
     try {
-      const empCode = row.EmpCode ?? row.empcode ?? row.EMPCODE;
+      const empCode = rowEmpCode(row);
       await api.post("/dashboard/ot-approve", { empCode, date, approvedOT: 0 });
       setRows(prev => prev.map(r =>
-        (r.EmpCode ?? r.empcode ?? r.EMPCODE) === empCode
-          ? { ...r, ApprovedOT: 0 }
-          : r
+        rowEmpCode(r) === empCode ? { ...r, ApprovedOT: 0 } : r
       ));
     } catch {
       setError("Failed to reverse OT approval.");
@@ -131,11 +132,13 @@ export default function OTApproval() {
               </thead>
               <tbody>
                 {rows.map((row, i) => {
-                  const empCode = row.EmpCode ?? row.empcode ?? row.EMPCODE;
-                  const empName = row.EmpName ?? row.empname ?? row.EMPNAME;
-                  const dept    = row.Department ?? row.department ?? row.DEPARTMENT;
-                  const ot      = row.OT ?? row.ot ?? 0;
-                  const appOT   = row.ApprovedOT ?? row.approvedot ?? row.APPROVEDOT ?? 0;
+                  // Case-insensitive column getter — SP returns empcode/empname/deptname/Ot/ApprovedOT
+                  const ci = (keys) => { for (const k of keys) { const e = Object.entries(row).find(([rk]) => rk.toLowerCase() === k.toLowerCase()); if (e && e[1] != null) return e[1]; } return undefined; };
+                  const empCode = ci(["empcode","EmpCode","empno"]);
+                  const empName = ci(["empname","EmpName","name"]);
+                  const dept    = ci(["deptname","Department","dept","department"]);
+                  const ot      = ci(["Ot","OT","ot"]) ?? 0;
+                  const appOT   = ci(["ApprovedOT","approvedot","approved_ot"]) ?? 0;
                   return (
                     <tr key={i}>
                       <td>{i + 1}</td>
@@ -210,7 +213,7 @@ export default function OTApproval() {
                   Approve OT
                 </div>
                 <div style={{ fontSize: 12, color: "var(--text3)", marginTop: 2 }}>
-                  {panel.row.EmpName ?? panel.row.empname ?? ""} ({panel.row.EmpCode ?? panel.row.empcode ?? ""})
+                  {rowGet(panel.row, ["empname","EmpName"]) ?? ""} ({rowEmpCode(panel.row) ?? ""})
                 </div>
               </div>
               <button onClick={closePanel} style={{
@@ -231,13 +234,13 @@ export default function OTApproval() {
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
                   <span>Department</span>
                   <strong style={{ color: "var(--text)" }}>
-                    {panel.row.Department ?? panel.row.department ?? "—"}
+                    {rowGet(panel.row, ["deptname","Department","dept"]) ?? "—"}
                   </strong>
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between" }}>
                   <span>Actual OT</span>
                   <strong style={{ color: "var(--text)", fontSize: 16 }}>
-                    {panel.row.OT ?? panel.row.ot ?? 0}
+                    {rowOT(panel.row)}
                   </strong>
                 </div>
               </div>
