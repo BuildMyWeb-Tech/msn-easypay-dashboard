@@ -32,7 +32,10 @@ async function getDashboardMain(companyId, date, dbName) {
   //   [4] attendance     [{Dt, Pre, Ab, Ir}]
   //   [5] turnover       [{FNew, MNew, FLeft, MLeft}]
   const rs = res.recordsets;
+  // rs[0] = [{Dt}] — the actual date SP used (may differ from @Dt if attendance not processed yet)
+  const actualDt = rs[0]?.[0]?.Dt || null;
   return {
+    actualDate: actualDt ? new Date(actualDt).toISOString().split("T")[0] : null,
     donut:    rs[1] || [],
     pie:      rs[2] || [],
     empData:  rs[3]?.[0] || {},
