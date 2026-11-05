@@ -147,7 +147,9 @@ async function getLongAbsent(companyId, date, dbName) {
     .input("companyid", sql.Int,  parseInt(companyId))
     .input("Dt",        sql.Date, date)
     .execute("PRW_GetLongAbsentEmployees");
-  return res.recordset || [];
+  const rows = res.recordset || [];
+  if (rows.length > 0) console.log("[LongAbsent] columns:", Object.keys(rows[0]));
+  return rows;
 }
 
 // ─── Approval SPs ────────────────────────────────────────────────────────────
