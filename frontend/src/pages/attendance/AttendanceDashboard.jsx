@@ -332,15 +332,22 @@ export default function AttendanceDashboard() {
   const [deptSum, setDeptSum] = useState(DUMMY_DEPT_SUMMARY);
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState("");
+  const [notProcessed, setNotProcessed] = useState(null); // date string if selected date not yet processed
 
   // ── Load main data (sections 1-5) ───────────────────────────
   const loadMain = useCallback(async (d) => {
     if (user?.isDemo) { setMain(DUMMY_MAIN); return; }
     setLoading(true);
     setError("");
+    setNotProcessed(null);
     try {
       const res = await api.get(`/dashboard/main-data?date=${d}`);
-      setMain(res.data.data);
+      const data = res.data.data;
+      setMain(data);
+      // If SP returned a different date, attendance wasn't processed for the selected date
+      if (data.actualDate && data.actualDate !== d) {
+        setNotProcessed(d); // show banner for selected date
+      }
     } catch (err) {
       setError("Failed to load dashboard data. Showing demo data.");
       setMain(DUMMY_MAIN);
@@ -366,6 +373,7 @@ export default function AttendanceDashboard() {
   }, [user]);
 
   useEffect(() => {
+    setNotProcessed(null);
     loadMain(date);
     loadSecondary(date);
   }, [date]);
@@ -430,6 +438,22 @@ export default function AttendanceDashboard() {
           </span>
         )}
       </div>
+
+      {/* Not processed banner */}
+      {notProcessed && !loading && (
+        <div style={{
+          display: "flex", alignItems: "center", gap: 10,
+          background: "var(--yellow-dim)", border: "1px solid var(--yellow)",
+          borderRadius: "var(--radius-sm)", padding: "12px 16px",
+          fontSize: 13,
+        }}>
+          <AlertTriangle size={16} style={{ color: "var(--yellow)", flexShrink: 0 }} />
+          <span>
+            <strong style={{ color: "var(--text)" }}>Attendance not processed for {fmtDate(notProcessed)}.</strong>
+            {" "}Showing last available data.
+          </span>
+        </div>
+      )}
 
       {/* ─ 1 & 2: Donut + Dept Pie ───────────────────────────── */}
       <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 16 }}>
