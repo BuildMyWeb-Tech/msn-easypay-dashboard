@@ -154,15 +154,15 @@ async function getLongAbsent(companyId, date, dbName) {
 
 // ─── Approval SPs ────────────────────────────────────────────────────────────
 
-// Save OT approval — SP: PRW_ApproveOT (confirm exact name with manager)
+// SP: PRW_Approve_OT @Dt date, @empcode nvarchar(50), @approvedot float, @companyid int
 async function approveOT(companyId, empCode, date, approvedOT, dbName) {
   const pool = await resolvePool(dbName);
   await pool.request()
-    .input("companyid",  sql.Int,     parseInt(companyId))
-    .input("empcode",    sql.VarChar, String(empCode))
-    .input("dt",         sql.Date,    date)
-    .input("approvedot", sql.Int,     parseInt(approvedOT))
-    .execute("PRW_ApproveOT");
+    .input("Dt",         sql.Date,         date)
+    .input("empcode",    sql.NVarChar(50), String(empCode))
+    .input("approvedot", sql.Float,        parseFloat(approvedOT))
+    .input("companyid",  sql.Int,          parseInt(companyId))
+    .execute("PRW_Approve_OT");
 }
 
 // SP: PRW_Get_IrregularpunchData @dt date, @companyid int
