@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useTenant } from "../hooks/useTenant";
-import { Eye, EyeOff, LogIn, Users, ClipboardList, CreditCard, BarChart2 } from "lucide-react";
+import { Eye, EyeOff, LogIn, Users, ClipboardList, CreditCard, BarChart2, Download } from "lucide-react";
 
 const FEATURES = [
   { Icon: Users,         label: "Employee Management",      desc: "Manage your workforce efficiently" },
@@ -21,6 +21,23 @@ export default function Login() {
   const [showPwd, setShow]    = useState(false);
   const [error, setError]     = useState("");
   const [loading, setLoading] = useState(false);
+  const [installPrompt, setInstallPrompt] = useState(null);
+  const [installing, setInstalling]       = useState(false);
+
+  useEffect(() => {
+    const handler = (e) => { e.preventDefault(); setInstallPrompt(e); };
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+
+  const handleInstall = async () => {
+    if (!installPrompt) return;
+    setInstalling(true);
+    installPrompt.prompt();
+    await installPrompt.userChoice;
+    setInstallPrompt(null);
+    setInstalling(false);
+  };
 
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
 
@@ -336,6 +353,29 @@ export default function Login() {
                   : <><LogIn size={16} /> Sign In</>}
               </button>
             </form>
+
+            {installPrompt && (
+              <button
+                type="button"
+                onClick={handleInstall}
+                disabled={installing}
+                style={{
+                  width: "100%", marginTop: 12,
+                  padding: "10px 12px",
+                  background: "transparent",
+                  color: "var(--primary)",
+                  border: "1.5px solid var(--primary)",
+                  borderRadius: 8,
+                  fontSize: 14, fontWeight: 600,
+                  cursor: installing ? "not-allowed" : "pointer",
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
+                  opacity: installing ? 0.7 : 1,
+                  transition: "opacity .15s",
+                }}>
+                <Download size={15} />
+                {installing ? "Installing…" : "Install App"}
+              </button>
+            )}
 
             <div className="login-footer">
               MSN Infotec &copy; {new Date().getFullYear()}
