@@ -51,10 +51,12 @@ app.get("/health", (_, res) =>
 
 app.use("/api/auth",      require("./routes/authRoutes"));
 app.use("/api/dashboard", require("./routes/dashboardRoutes"));
+app.use("/api/payroll",   require("./routes/payrollRoutes"));
 app.use("/api/tenants",   require("./routes/tenantRoutes"));
 // Also mount without /api prefix for Vercel deployments where VITE_API_URL omits /api
 app.use("/auth",      require("./routes/authRoutes"));
 app.use("/dashboard", require("./routes/dashboardRoutes"));
+app.use("/payroll",   require("./routes/payrollRoutes"));
 app.use("/tenants",   require("./routes/tenantRoutes"));
 
 const { notFound, errorHandler } = require("./middleware/authMiddleware");

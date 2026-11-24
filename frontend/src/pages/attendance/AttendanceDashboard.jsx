@@ -333,6 +333,7 @@ export default function AttendanceDashboard() {
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState("");
   const [notProcessed, setNotProcessed] = useState(null); // date string if selected date not yet processed
+  const [actualDate, setActualDate]     = useState(null); // last processed date returned by SP
 
   // ── Load main data (sections 1-5) ───────────────────────────
   const loadMain = useCallback(async (d) => {
@@ -346,7 +347,10 @@ export default function AttendanceDashboard() {
       setMain(data);
       // If SP returned a different date, attendance wasn't processed for the selected date
       if (data.actualDate && data.actualDate !== d) {
-        setNotProcessed(d); // show banner for selected date
+        setNotProcessed(d);
+        setActualDate(data.actualDate);
+      } else {
+        setActualDate(null);
       }
     } catch (err) {
       setError("Failed to load dashboard data. Showing demo data.");
@@ -374,6 +378,7 @@ export default function AttendanceDashboard() {
 
   useEffect(() => {
     setNotProcessed(null);
+    setActualDate(null);
     loadMain(date);
     loadSecondary(date);
   }, [date]);
@@ -399,7 +404,7 @@ export default function AttendanceDashboard() {
   const totalStrength = (emp.TotalEmployees || 1);
   const turnoverRate = totalStrength > 0 ? ((totalLeft / totalStrength) * 100).toFixed(1) + "%" : "0%";
 
-  const sectionLabel = fmtDate(date);
+  const sectionLabel = fmtDate(actualDate || date);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
