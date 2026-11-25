@@ -279,6 +279,30 @@ export default function Login() {
         }
       `}</style>
 
+      {installPrompt && (
+        <button
+          type="button"
+          onClick={handleInstall}
+          disabled={installing}
+          style={{
+            position: "fixed", top: 20, right: 24, zIndex: 1000,
+            display: "flex", alignItems: "center", gap: 8,
+            padding: "10px 20px",
+            background: "#fff",
+            color: "var(--primary)",
+            border: "1.5px solid var(--primary)",
+            borderRadius: 8,
+            fontSize: 14, fontWeight: 700,
+            cursor: installing ? "not-allowed" : "pointer",
+            opacity: installing ? 0.7 : 1,
+            boxShadow: "0 2px 12px rgba(0,0,0,0.10)",
+            transition: "opacity .15s, box-shadow .15s",
+          }}>
+          <Download size={16} />
+          {installing ? "Installing…" : "Install App"}
+        </button>
+      )}
+
       <div className="login-wrap">
         {/* ── Left branding panel ── */}
         <div className="login-left">
@@ -353,29 +377,6 @@ export default function Login() {
                   : <><LogIn size={16} /> Sign In</>}
               </button>
             </form>
-
-            {installPrompt && (
-              <button
-                type="button"
-                onClick={handleInstall}
-                disabled={installing}
-                style={{
-                  width: "100%", marginTop: 12,
-                  padding: "10px 12px",
-                  background: "transparent",
-                  color: "var(--primary)",
-                  border: "1.5px solid var(--primary)",
-                  borderRadius: 8,
-                  fontSize: 14, fontWeight: 600,
-                  cursor: installing ? "not-allowed" : "pointer",
-                  display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
-                  opacity: installing ? 0.7 : 1,
-                  transition: "opacity .15s",
-                }}>
-                <Download size={15} />
-                {installing ? "Installing…" : "Install App"}
-              </button>
-            )}
 
             <div className="login-footer">
               MSN Infotec &copy; {new Date().getFullYear()}
