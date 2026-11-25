@@ -52,29 +52,27 @@ export default function CompanySearch() {
       minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center",
       background: "var(--bg)", padding: 16,
     }}>
-      {installPrompt && (
-        <button
-          type="button"
-          onClick={handleInstall}
-          disabled={installing}
-          style={{
-            position: "fixed", top: 20, right: 24, zIndex: 1000,
-            display: "flex", alignItems: "center", gap: 8,
-            padding: "10px 20px",
-            background: "#fff",
-            color: "var(--primary)",
-            border: "1.5px solid var(--primary)",
-            borderRadius: 8,
-            fontSize: 14, fontWeight: 700,
-            cursor: installing ? "not-allowed" : "pointer",
-            opacity: installing ? 0.7 : 1,
-            boxShadow: "0 2px 12px rgba(0,0,0,0.10)",
-            transition: "opacity .15s",
-          }}>
-          <Download size={16} />
-          {installing ? "Installing…" : "Install App"}
-        </button>
-      )}
+      <button
+        type="button"
+        onClick={handleInstall}
+        disabled={installing || !installPrompt}
+        style={{
+          position: "fixed", top: 20, right: 24, zIndex: 1000,
+          display: "flex", alignItems: "center", gap: 8,
+          padding: "10px 20px",
+          background: "#fff",
+          color: "var(--primary)",
+          border: "1.5px solid var(--primary)",
+          borderRadius: 8,
+          fontSize: 14, fontWeight: 700,
+          cursor: (installing || !installPrompt) ? "default" : "pointer",
+          opacity: !installPrompt ? 0.5 : installing ? 0.7 : 1,
+          boxShadow: "0 2px 12px rgba(0,0,0,0.10)",
+          transition: "opacity .15s",
+        }}>
+        <Download size={16} />
+        {installing ? "Installing…" : "Install App"}
+      </button>
       <div style={{ width: "100%", maxWidth: 400 }}>
         {/* Logo */}
         <div style={{ textAlign: "center", marginBottom: 36 }}>
