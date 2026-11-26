@@ -34,6 +34,18 @@ export default function InstallButton() {
     setShowModal(false);
   };
 
+  // Corner button click:
+  // - Android + prompt ready  → install directly (no popup)
+  // - Android + no prompt     → show modal with manual steps
+  // - iOS                     → show modal with Safari steps
+  const handleCornerClick = () => {
+    if (!ios && deferredPrompt) {
+      triggerInstall();
+    } else {
+      setShowModal(true);
+    }
+  };
+
   const iosSteps = [
     { n: 1, icon: <Share size={14} />,      text: 'Tap the Share button at the bottom of Safari' },
     { n: 2, icon: <Plus size={14} />,       text: 'Scroll and tap "Add to Home Screen"' },
@@ -50,7 +62,8 @@ export default function InstallButton() {
       {/* ── Corner button — always visible ── */}
       <button
         type="button"
-        onClick={() => setShowModal(true)}
+        onClick={handleCornerClick}
+        disabled={installing}
         style={{
           position: "fixed", top: 16, right: 16, zIndex: 1000,
           display: "flex", alignItems: "center", gap: 8,
@@ -60,15 +73,16 @@ export default function InstallButton() {
           border: "1.5px solid var(--primary)",
           borderRadius: 8,
           fontSize: 14, fontWeight: 700,
-          cursor: "pointer",
+          cursor: installing ? "default" : "pointer",
           boxShadow: "0 2px 12px rgba(0,0,0,0.12)",
           whiteSpace: "nowrap",
+          opacity: installing ? 0.75 : 1,
         }}>
         <Download size={15} />
-        Install App
+        {installing ? "Installing…" : "Install App"}
       </button>
 
-      {/* ── Install modal ── */}
+      {/* ── Modal — only shown for iOS or when no native prompt ── */}
       {showModal && (
         <>
           {/* Backdrop */}
@@ -80,7 +94,7 @@ export default function InstallButton() {
             }}
           />
 
-          {/* Sheet — slides up from bottom */}
+          {/* Sheet */}
           <div style={{
             position: "fixed", zIndex: 1002,
             bottom: "env(safe-area-inset-bottom, 0px)",
@@ -122,40 +136,13 @@ export default function InstallButton() {
                 Install on your device
               </div>
               <div style={{ fontSize: 13, color: "var(--text3)", lineHeight: 1.6, marginBottom: 20 }}>
-                Add EasyPay to your home screen for quick one-tap access, offline support, and a full-screen app experience.
+                Add EasyPay to your home screen for quick one-tap access and a full-screen app experience.
               </div>
 
-              {/* Primary install button — only shown when native prompt is ready */}
-              {!ios && deferredPrompt && (
-                <button
-                  onClick={triggerInstall}
-                  disabled={installing}
-                  style={{
-                    width: "100%", padding: "14px 0",
-                    background: "var(--primary)", color: "#fff",
-                    border: "none", borderRadius: 12,
-                    fontSize: 15, fontWeight: 700,
-                    cursor: installing ? "default" : "pointer",
-                    display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-                    boxShadow: "0 4px 16px rgba(229,57,53,0.35)",
-                    marginBottom: 16,
-                    opacity: installing ? 0.75 : 1,
-                  }}>
-                  <Download size={17} />
-                  {installing ? "Installing…" : "Install App"}
-                </button>
-              )}
-
-              {/* Divider + manual steps */}
-              <div style={{
-                background: "var(--bg)", borderRadius: 14, padding: "14px 16px",
-              }}>
+              {/* Steps */}
+              <div style={{ background: "var(--bg)", borderRadius: 14, padding: "14px 16px" }}>
                 <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text)", marginBottom: 12 }}>
-                  {ios
-                    ? "How to install on iPhone / iPad:"
-                    : deferredPrompt
-                      ? "Or install manually:"
-                      : "How to install on Android Chrome:"}
+                  {ios ? "How to install on iPhone / iPad:" : "How to install on Android Chrome:"}
                 </div>
 
                 {(ios ? iosSteps : androidSteps).map(({ n, icon, text }) => (
