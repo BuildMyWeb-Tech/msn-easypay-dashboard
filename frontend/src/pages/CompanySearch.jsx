@@ -1,30 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, ArrowRight, Download } from "lucide-react";
+import { Search, ArrowRight } from "lucide-react";
+import InstallButton from "../components/InstallButton";
 
 export default function CompanySearch() {
   const navigate = useNavigate();
   const [slug, setSlug]     = useState("");
   const [error, setError]   = useState("");
   const [loading, setLoading] = useState(false);
-  const [installPrompt, setInstallPrompt] = useState(null);
-  const [installing, setInstalling]       = useState(false);
-
-  useEffect(() => {
-    const handler = (e) => { e.preventDefault(); setInstallPrompt(e); };
-    window.addEventListener("beforeinstallprompt", handler);
-    return () => window.removeEventListener("beforeinstallprompt", handler);
-  }, []);
-
-  const handleInstall = async () => {
-    if (!installPrompt) return;
-    setInstalling(true);
-    installPrompt.prompt();
-    await installPrompt.userChoice;
-    setInstallPrompt(null);
-    setInstalling(false);
-  };
-
   const handleSearch = async (e) => {
     e.preventDefault();
     const clean = slug.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -52,27 +35,7 @@ export default function CompanySearch() {
       minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center",
       background: "var(--bg)", padding: 16,
     }}>
-      <button
-        type="button"
-        onClick={handleInstall}
-        disabled={installing || !installPrompt}
-        style={{
-          position: "fixed", top: 20, right: 24, zIndex: 1000,
-          display: "flex", alignItems: "center", gap: 8,
-          padding: "10px 20px",
-          background: "#fff",
-          color: "var(--primary)",
-          border: "1.5px solid var(--primary)",
-          borderRadius: 8,
-          fontSize: 14, fontWeight: 700,
-          cursor: (installing || !installPrompt) ? "default" : "pointer",
-          opacity: !installPrompt ? 0.5 : installing ? 0.7 : 1,
-          boxShadow: "0 2px 12px rgba(0,0,0,0.10)",
-          transition: "opacity .15s",
-        }}>
-        <Download size={16} />
-        {installing ? "Installing…" : "Install App"}
-      </button>
+      <InstallButton />
       <div style={{ width: "100%", maxWidth: 400 }}>
         {/* Logo */}
         <div style={{ textAlign: "center", marginBottom: 36 }}>

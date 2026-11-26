@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useTenant } from "../hooks/useTenant";
-import { Eye, EyeOff, LogIn, Users, ClipboardList, CreditCard, BarChart2, Download } from "lucide-react";
+import { Eye, EyeOff, LogIn, Users, ClipboardList, CreditCard, BarChart2 } from "lucide-react";
+import InstallButton from "../components/InstallButton";
 
 const FEATURES = [
   { Icon: Users,         label: "Employee Management",      desc: "Manage your workforce efficiently" },
@@ -21,24 +22,6 @@ export default function Login() {
   const [showPwd, setShow]    = useState(false);
   const [error, setError]     = useState("");
   const [loading, setLoading] = useState(false);
-  const [installPrompt, setInstallPrompt] = useState(null);
-  const [installing, setInstalling]       = useState(false);
-
-  useEffect(() => {
-    const handler = (e) => { e.preventDefault(); setInstallPrompt(e); };
-    window.addEventListener("beforeinstallprompt", handler);
-    return () => window.removeEventListener("beforeinstallprompt", handler);
-  }, []);
-
-  const handleInstall = async () => {
-    if (!installPrompt) return;
-    setInstalling(true);
-    installPrompt.prompt();
-    await installPrompt.userChoice;
-    setInstallPrompt(null);
-    setInstalling(false);
-  };
-
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
 
   const handleSubmit = async (e) => {
@@ -279,27 +262,7 @@ export default function Login() {
         }
       `}</style>
 
-      <button
-        type="button"
-        onClick={handleInstall}
-        disabled={installing || !installPrompt}
-        style={{
-          position: "fixed", top: 20, right: 24, zIndex: 1000,
-          display: "flex", alignItems: "center", gap: 8,
-          padding: "10px 20px",
-          background: "#fff",
-          color: "var(--primary)",
-          border: "1.5px solid var(--primary)",
-          borderRadius: 8,
-          fontSize: 14, fontWeight: 700,
-          cursor: (installing || !installPrompt) ? "default" : "pointer",
-          opacity: !installPrompt ? 0.5 : installing ? 0.7 : 1,
-          boxShadow: "0 2px 12px rgba(0,0,0,0.10)",
-          transition: "opacity .15s",
-        }}>
-        <Download size={16} />
-        {installing ? "Installing…" : "Install App"}
-      </button>
+      <InstallButton />
 
       <div className="login-wrap">
         {/* ── Left branding panel ── */}
