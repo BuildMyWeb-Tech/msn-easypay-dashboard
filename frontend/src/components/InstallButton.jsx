@@ -22,30 +22,35 @@ export default function InstallButton() {
     return () => window.removeEventListener("beforeinstallprompt", handler);
   }, []);
 
-  // Don't show if already running as installed PWA
   if (isStandalone()) return null;
 
-  const handleButtonClick = async () => {
-    if (deferredPrompt) {
-      // Chrome/Android: trigger native prompt directly
-      setInstalling(true);
-      deferredPrompt.prompt();
-      await deferredPrompt.userChoice;
-      setDeferredPrompt(null);
-      setInstalling(false);
-    } else {
-      // No native prompt (iOS or already dismissed): show instruction modal
-      setShowModal(true);
-    }
+  const triggerInstall = async () => {
+    if (!deferredPrompt) return;
+    setInstalling(true);
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    setDeferredPrompt(null);
+    setInstalling(false);
+    setShowModal(false);
   };
+
+  const iosSteps = [
+    { n: 1, icon: <Share size={14} />,      text: 'Tap the Share button at the bottom of Safari' },
+    { n: 2, icon: <Plus size={14} />,       text: 'Scroll and tap "Add to Home Screen"' },
+    { n: 3, icon: <Smartphone size={14} />, text: 'Tap "Add" to confirm' },
+  ];
+  const androidSteps = [
+    { n: 1, icon: <span style={{ fontSize: 16, lineHeight: 1 }}>⋮</span>, text: 'Tap the 3-dot menu (⋮) in Chrome top-right' },
+    { n: 2, icon: <Download size={14} />,                                  text: 'Tap "Add to Home screen" or "Install app"' },
+    { n: 3, icon: <Smartphone size={14} />,                                text: 'Tap "Add" or "Install" to confirm' },
+  ];
 
   return (
     <>
-      {/* Corner button — always visible */}
+      {/* ── Corner button — always visible ── */}
       <button
         type="button"
-        onClick={handleButtonClick}
-        disabled={installing}
+        onClick={() => setShowModal(true)}
         style={{
           position: "fixed", top: 16, right: 16, zIndex: 1000,
           display: "flex", alignItems: "center", gap: 8,
@@ -55,104 +60,129 @@ export default function InstallButton() {
           border: "1.5px solid var(--primary)",
           borderRadius: 8,
           fontSize: 14, fontWeight: 700,
-          cursor: installing ? "default" : "pointer",
-          opacity: installing ? 0.7 : 1,
+          cursor: "pointer",
           boxShadow: "0 2px 12px rgba(0,0,0,0.12)",
-          transition: "opacity .15s",
           whiteSpace: "nowrap",
         }}>
         <Download size={15} />
-        {installing ? "Installing…" : "Install App"}
+        Install App
       </button>
 
-      {/* Instruction modal for iOS or when native prompt unavailable */}
+      {/* ── Install modal ── */}
       {showModal && (
         <>
-          <div onClick={() => setShowModal(false)} style={{
-            position: "fixed", inset: 0,
-            background: "rgba(0,0,0,0.5)", backdropFilter: "blur(3px)",
-            zIndex: 1001,
-          }} />
+          {/* Backdrop */}
+          <div
+            onClick={() => setShowModal(false)}
+            style={{
+              position: "fixed", inset: 0, zIndex: 1001,
+              background: "rgba(0,0,0,0.5)", backdropFilter: "blur(3px)",
+            }}
+          />
+
+          {/* Sheet — slides up from bottom */}
           <div style={{
             position: "fixed", zIndex: 1002,
-            bottom: "calc(24px + env(safe-area-inset-bottom, 0px))",
-            left: "50%", transform: "translateX(-50%)",
-            width: "min(360px, calc(100vw - 32px))",
+            bottom: "env(safe-area-inset-bottom, 0px)",
+            left: 0, right: 0,
             background: "var(--surface)",
-            border: "1px solid var(--border)",
-            borderRadius: 20,
-            boxShadow: "0 20px 60px rgba(0,0,0,0.28)",
+            borderRadius: "20px 20px 0 0",
+            boxShadow: "0 -8px 40px rgba(0,0,0,0.22)",
             overflow: "hidden",
+            maxHeight: "90vh",
+            overflowY: "auto",
           }}>
-            {/* Header */}
+
+            {/* Red header */}
             <div style={{
-              background: "var(--primary)", padding: "16px 20px",
+              background: "var(--primary)", padding: "18px 20px 16px",
               display: "flex", alignItems: "center", justifyContent: "space-between",
             }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                 <img src="/msn-logo.png" alt=""
-                  style={{ width: 40, height: 40, borderRadius: 10, background: "#fff", padding: 3 }}
+                  style={{ width: 44, height: 44, borderRadius: 10, background: "#fff", padding: 4 }}
                   onError={e => e.target.style.display = "none"} />
                 <div>
-                  <div style={{ fontSize: 16, fontWeight: 800, color: "#fff" }}>MSN EasyPay</div>
-                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.75)" }}>HR &amp; Payroll Dashboard</div>
+                  <div style={{ fontSize: 17, fontWeight: 800, color: "#fff" }}>MSN EasyPay</div>
+                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.75)", marginTop: 2 }}>HR &amp; Payroll Dashboard</div>
                 </div>
               </div>
               <button onClick={() => setShowModal(false)} style={{
                 background: "rgba(255,255,255,0.2)", border: "none", borderRadius: 8,
-                width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center",
+                width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center",
                 cursor: "pointer", color: "#fff", flexShrink: 0,
               }}>
-                <X size={14} />
+                <X size={16} />
               </button>
             </div>
 
             {/* Body */}
-            <div style={{ padding: "16px 20px 20px" }}>
-              <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 6 }}>
+            <div style={{ padding: "20px 20px 32px" }}>
+              <div style={{ fontSize: 16, fontWeight: 800, color: "var(--text)", marginBottom: 6 }}>
                 Install on your device
               </div>
-              <div style={{ fontSize: 12, color: "var(--text3)", lineHeight: 1.6, marginBottom: 14 }}>
-                Add EasyPay to your home screen for quick one-tap access and a full-screen experience.
+              <div style={{ fontSize: 13, color: "var(--text3)", lineHeight: 1.6, marginBottom: 20 }}>
+                Add EasyPay to your home screen for quick one-tap access, offline support, and a full-screen app experience.
               </div>
 
-              {/* Steps */}
-              <div style={{ background: "var(--bg)", borderRadius: 12, padding: "12px 14px" }}>
-                <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8 }}>
-                  {ios ? "How to install on iPhone / iPad:" : "How to install on Android:"}
+              {/* Primary install button — only shown when native prompt is ready */}
+              {!ios && deferredPrompt && (
+                <button
+                  onClick={triggerInstall}
+                  disabled={installing}
+                  style={{
+                    width: "100%", padding: "14px 0",
+                    background: "var(--primary)", color: "#fff",
+                    border: "none", borderRadius: 12,
+                    fontSize: 15, fontWeight: 700,
+                    cursor: installing ? "default" : "pointer",
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                    boxShadow: "0 4px 16px rgba(229,57,53,0.35)",
+                    marginBottom: 16,
+                    opacity: installing ? 0.75 : 1,
+                  }}>
+                  <Download size={17} />
+                  {installing ? "Installing…" : "Install App"}
+                </button>
+              )}
+
+              {/* Divider + manual steps */}
+              <div style={{
+                background: "var(--bg)", borderRadius: 14, padding: "14px 16px",
+              }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text)", marginBottom: 12 }}>
+                  {ios
+                    ? "How to install on iPhone / iPad:"
+                    : deferredPrompt
+                      ? "Or install manually:"
+                      : "How to install on Android Chrome:"}
                 </div>
-                {(ios ? [
-                  { n: 1, icon: <Share size={13} />,      text: 'Tap the Share button at the bottom of Safari' },
-                  { n: 2, icon: <Plus size={13} />,       text: 'Tap "Add to Home Screen"' },
-                  { n: 3, icon: <Smartphone size={13} />, text: 'Tap "Add" to confirm' },
-                ] : [
-                  { n: 1, icon: <span style={{fontSize:13}}>⋮</span>, text: 'Tap the 3-dot menu in Chrome' },
-                  { n: 2, icon: <Download size={13} />,               text: 'Tap "Add to Home screen" or "Install app"' },
-                  { n: 3, icon: <Smartphone size={13} />,             text: 'Tap "Add" / "Install" to confirm' },
-                ]).map(({ n, icon, text }) => (
+
+                {(ios ? iosSteps : androidSteps).map(({ n, icon, text }) => (
                   <div key={n} style={{
-                    display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 8,
-                    fontSize: 12, color: "var(--text2)",
+                    display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 12,
                   }}>
                     <div style={{
-                      width: 20, height: 20, borderRadius: "50%",
+                      width: 24, height: 24, borderRadius: "50%", flexShrink: 0,
                       background: "var(--primary)", color: "#fff",
                       display: "flex", alignItems: "center", justifyContent: "center",
-                      fontSize: 11, fontWeight: 700, flexShrink: 0, marginTop: 1,
+                      fontSize: 12, fontWeight: 800,
                     }}>{n}</div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6, flex: 1 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, paddingTop: 2 }}>
                       <span style={{ color: "var(--text3)", flexShrink: 0 }}>{icon}</span>
-                      {text}
+                      <span style={{ fontSize: 13, color: "var(--text2)", lineHeight: 1.4 }}>{text}</span>
                     </div>
                   </div>
                 ))}
               </div>
 
-              <button onClick={() => setShowModal(false)} style={{
-                marginTop: 12, width: "100%", padding: "10px 0",
-                background: "none", border: "1px solid var(--border)", borderRadius: 10,
-                fontSize: 13, color: "var(--text3)", cursor: "pointer", fontWeight: 500,
-              }}>
+              <button
+                onClick={() => setShowModal(false)}
+                style={{
+                  marginTop: 14, width: "100%", padding: "12px 0",
+                  background: "none", border: "1.5px solid var(--border)", borderRadius: 12,
+                  fontSize: 14, color: "var(--text3)", cursor: "pointer", fontWeight: 600,
+                }}>
                 Close
               </button>
             </div>
